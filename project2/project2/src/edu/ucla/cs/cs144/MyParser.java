@@ -183,10 +183,102 @@ class MyParser {
         /* Fill in code here (you will probably need to write auxiliary
             methods). */
         
+        // Retrieve all items from the document
+        Element[] items = getElementsByTagNameNR(doc.getDocumentElement(), "Item");
         
-        
-        /**************************************************************/
-        
+        try {
+        	// Process the items from the data
+        	processItems(items);
+        }
+        catch (Exception e) {
+        	System.out.println("Error processing item");
+        	e.printStackTrace();
+        	System.exit(3);
+        }
+                      
+        /**************************************************************/        
+    }
+    
+    static void processItems(Element[] items) {
+    	ArrayList<Item> processedItems = new ArrayList<Item>();
+    	ArrayList<Bid> processedBids = new ArrayList<Bid>();
+    	HashSet<User> processedUsers = new HashSet<User>();
+    	
+    	// Process each item individually
+    	for (int i = 0; i < items.length; i++) {
+    		Element itemData = items[i];
+    		Item newItem = new Item(itemData); 
+    		System.out.println(newItem.toString());
+    	}
+    }
+    
+    static class dataObjects {
+    	ArrayList<Item> processedItems;
+    	ArrayList<Bid> processedBids;
+    	HashSet<User> processedUsers;
+    	
+    	public dataObjects() {
+        	this.processedItems = new ArrayList<Item>();
+        	this.processedBids = new ArrayList<Bid>();
+        	this.processedUsers = new HashSet<User>();
+    	}
+    }
+    
+    static class Item {
+    	String itemId;
+    	String name;
+    	String currently;
+    	String buyPrice;
+    	String firstBid;
+    	String numBids;
+    	String description;    	
+    	String started;
+    	String ended;
+    	
+    	ArrayList<String> categories;    	
+    	User seller;
+    	ArrayList<Bid> bids;
+    	
+    	public Item(Element itemData) {
+    		this.categories = new ArrayList<String>();
+    		this.bids = new ArrayList<Bid>();
+    		
+    		this.itemId = itemData.getAttribute("ItemID");
+    		this.name = getElementTextByTagNameNR(itemData, "Name");
+    		this.currently = getElementTextByTagNameNR(itemData, "Currently");    
+    		this.buyPrice = getElementTextByTagNameNR(itemData, "Buy_Price");
+    		this.firstBid = getElementTextByTagNameNR(itemData, "First_Bid");
+    		this.numBids = getElementTextByTagNameNR(itemData, "Number_of_Bids");
+    		this.description = getElementTextByTagNameNR(itemData, "Description");
+    		this.started = getElementTextByTagNameNR(itemData, "Started");
+    		this.ended = getElementTextByTagNameNR(itemData, "Ends");
+    	}
+    	
+    	public String toString() {
+    		return "ItemID: " + this.itemId + "\n" + 
+    			   "Name: " + this.name + "\n" + 
+    			   "Currently: " + this.currently + "\n" + 
+    			   "Buy Price: " + this.buyPrice + "\n" + 
+    			   "First Bid: " + this.firstBid + "\n" + 
+    			   "Number of Bids: " + this.numBids + "\n" +
+    			   "Description: " + this.description + "\n" +
+    			   "Started: " + this.started + "\n" + 
+    			   "Ended: " + this.ended + "\n";
+    	}
+    }
+    
+    static class User {
+    	String userId;
+    	String rating;
+    	String location;
+    	String country;
+    }
+    
+    static class Bid {
+    	String userId;
+    	String itemId;
+    	String time;
+    	String amount;
     }
     
     public static void main (String[] args) {
