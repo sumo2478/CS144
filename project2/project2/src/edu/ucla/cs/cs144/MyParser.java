@@ -28,6 +28,7 @@ package edu.ucla.cs.cs144;
 import java.io.*;
 import java.text.*;
 import java.util.*;
+import java.io.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -208,8 +209,29 @@ class MyParser {
     	for (int i = 0; i < items.length; i++) {
     		Element itemData = items[i];
     		Item newItem = new Item(itemData); 
-    		System.out.println(newItem.toString());
+            writeDataToFile("test.dat", newItem.dataFileFormat());
     	}
+    }
+
+    /**
+     * Writes a string to a particular file
+     * @param fileName - the string of the file name
+     * @param data - the data string to write to the file
+     */
+    static void writeDataToFile(String fileName, String data) {
+        try {
+            FileWriter fileWriter = new FileWriter(fileName, true); 
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+            bufferedWriter.append(data);
+            bufferedWriter.newLine();
+            bufferedWriter.close();
+        }
+        catch (IOException e) {
+            System.out.println("Error writing to file");
+            e.printStackTrace();
+            System.exit(3);
+        }
     }
     
     static class dataObjects {
@@ -265,6 +287,19 @@ class MyParser {
     			   "Started: " + this.started + "\n" + 
     			   "Ended: " + this.ended + "\n";
     	}
+
+        // Returns a string with the proper format for a dat file
+        public String dataFileFormat() {
+            return this.itemId + "," +
+                   this.name + "," + 
+                   this.currently + "," +
+                   this.buyPrice + "," +
+                   this.firstBid + "," +
+                   this.numBids + "," +
+                   this.description + "," +
+                   this.started + "," +
+                   this.ended;
+        }
     }
     
     static class User {
@@ -280,7 +315,7 @@ class MyParser {
     	String time;
     	String amount;
     }
-    
+
     public static void main (String[] args) {
         if (args.length == 0) {
             System.out.println("Usage: java MyParser [file] [file] ...");
