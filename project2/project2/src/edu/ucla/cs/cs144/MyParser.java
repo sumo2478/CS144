@@ -236,6 +236,9 @@ class MyParser {
     	
     	// Write bids to file    	
     	writeBidsToFile(processedBids, "bids.dat");
+    	
+    	// Write locations with latitude and longitude to file
+    	writeLocationsToFile(processedItems, processedUsers.values(), "locations.dat");
     }
     
     static void writeItemsToFile(ArrayList<Item> items, String filename) {
@@ -253,6 +256,20 @@ class MyParser {
     static void writeBidsToFile(ArrayList<Bid> bids, String filename) {
     	for (Bid bid: bids) {
     		writeDataToFile(filename, bid.dataFileFormat());
+    	}
+    }
+    
+    static void writeLocationsToFile(ArrayList<Item> items, Collection<User> users, String filename) {
+    	for (Item item: items) {
+    		if (item.location.longitude != "" && item.location.latitude != "") {
+    			writeDataToFile(filename, item.location.dataFileFormat());
+    		}
+    	}
+    	
+    	for (User user: users) {
+    		if (user.location.longitude != "" && user.location.latitude != "") {
+    			writeDataToFile(filename, user.location.dataFileFormat());
+    		}
     	}
     }
     
@@ -397,27 +414,33 @@ class MyParser {
     static class User {
     	String userId;
     	String rating;
-    	String location;
+    	Location location;
     	String country;
 
         public User(Element userData) {
            this.userId = userData.getAttribute("UserID");
-           this.rating = userData.getAttribute("Rating");
-           this.location = getElementTextByTagNameNR(userData, "Location");
+           this.rating = userData.getAttribute("Rating");           
            this.country = getElementTextByTagNameNR(userData, "Country");
+           
+	   	   // Retrieve the location information
+           System.out.println("Start");
+	   	   Element locationData = getElementByTagNameNR(userData, "Location");
+	   	   System.out.println("Middle");
+	   	   this.location = new Location(locationData);
+	   	System.out.println("End");
         }
 
         public String toString() {
            return "User Id: " + this.userId + "\n" + 
                   "Rating: " + this.rating + "\n" +
-                  "Location: " + this.location + "\n" + 
+                  "Location: " + this.location.name + "\n" + 
                   "Country: " + this.country;
         }
 
         public String dataFileFormat() {
             return this.userId + "," +
                    this.rating + "," +
-                   this.location + "," +
+                   this.location.name + "," +
                    this.country;
         }
     }
@@ -426,7 +449,7 @@ class MyParser {
     	User user;
     	String itemId;
     	String time;
-    	String amount;
+    	String amount;    	
     	
     	public Bid(Element bidData, String itemId) {
     		this.itemId = itemId;
@@ -459,7 +482,11 @@ class MyParser {
     	String longitude;
     	
     	public Location(Element locationData) {
-    		this.name = locationData.getTextContent();
+    		if (locationData == null) {
+    			return;
+    		}
+    		
+    		this.name = locationData.getTextContent();    		
     		this.longitude = locationData.getAttribute("Longitude");
     		this.latitude = locationData.getAttribute("Latitude");
     	}
@@ -468,6 +495,12 @@ class MyParser {
     		return "Name: " + this.name + "\n" + 
     			   "Longitude: " + this.longitude + "\n" +
     			   "Latitude: " + this.latitude;
+    	}
+    	
+    	public String dataFileFormat() {
+    		return this.name + "," +
+    	           this.latitude + "," +
+    			   this.longitude;
     	}
     }
 
