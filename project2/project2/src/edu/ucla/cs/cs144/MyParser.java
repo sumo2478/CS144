@@ -203,7 +203,7 @@ class MyParser {
     static void processItems(Element[] items) {
     	ArrayList<Item> processedItems = new ArrayList<Item>();
     	ArrayList<Bid> processedBids = new ArrayList<Bid>();
-    	HashSet<User> processedUsers = new HashSet<User>();
+    	HashMap<String, User> processedUsers = new HashMap<String, User>();
     	
         // TODO: remove data in the current file?
 
@@ -211,9 +211,63 @@ class MyParser {
     	for (int i = 0; i < items.length; i++) {
     		Element itemData = items[i];
     		Item newItem = new Item(itemData);
+    		
+    		// Add the item to the processed items list
     		processedItems.add(newItem);
+    		
+    		// Add the bids to the processed bids list
+    		processedBids.addAll(newItem.bids);
+    		
+    		// Add the seller to the user hash set
+    		User seller = newItem.seller;
+    		addUserToHashMap(processedUsers, seller);
+    		
+    		// Add all the bidders to the user hash set
+    		for (int j = 0; j < processedBids.size(); j++) {
+    			addUserToHashMap(processedUsers, processedBids.get(j).user);
+    		}    		
 //            writeDataToFile("test.dat", newItem.dataFileFormat());
     	}
+    	
+    	// Write items to file
+    	writeItemsToFile(processedItems, "items.dat");
+    	
+    	// Write users to file
+    	writeUsersToFile(processedUsers.values(), "users.dat");
+    	
+//    	for (User user : processedUsers.values()) {
+//    		System.out.println(user);
+//    	}
+    }
+    
+    static void writeItemsToFile(ArrayList<Item> items, String filename) {
+    	for (Item item : items) {
+    		writeDataToFile(filename, item.dataFileFormat());
+    	}
+    }
+    
+    static void writeUsersToFile(Collection<User> users, String filename) {
+    	for (User user: users) {
+    		writeDataToFile(filename, user.dataFileFormat());
+    	}
+    }
+    
+    static void addUserToHashMap(HashMap<String, User> processedUsers, User newUser) {
+    	String userId = newUser.userId;
+    	
+		// If the user is already in the hash map
+		User storedUser = processedUsers.get(userId);
+		if (storedUser != null) {
+			// If the user data doesn't have location and the current user does then replace the old one with the new one
+			if (storedUser.location == null && newUser.location != null) {
+				System.out.println("Replacing Old: " + storedUser.toString() + " With New: " + newUser.toString());
+				processedUsers.put(userId, newUser);
+			}
+		}    			
+		// Otherwise add in the current user
+		else {
+			processedUsers.put(userId, newUser);
+		}
     }
 
     /**
