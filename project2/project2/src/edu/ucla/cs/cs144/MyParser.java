@@ -44,6 +44,7 @@ import org.xml.sax.ErrorHandler;
 
 class MyParser {
     
+	static final int MAX_DESCRIPTION_LENGTH = 4000;
     static final String columnSeparator = "|*|";
     static DocumentBuilder builder;
     
@@ -419,11 +420,17 @@ class MyParser {
     		this.currently = getElementTextByTagNameNR(itemData, "Currently");    
     		this.buyPrice = getElementTextByTagNameNR(itemData, "Buy_Price");
     		this.firstBid = getElementTextByTagNameNR(itemData, "First_Bid");
-    		this.numBids = getElementTextByTagNameNR(itemData, "Number_of_Bids");
-    		this.description = getElementTextByTagNameNR(itemData, "Description");    		    		    		
+    		this.numBids = getElementTextByTagNameNR(itemData, "Number_of_Bids");    		    		    		    		
             this.country = getElementTextByTagNameNR(itemData, "Country");
     		this.started = getElementTextByTagNameNR(itemData, "Started");
     		this.ended = getElementTextByTagNameNR(itemData, "Ends");
+    		
+    		// Retrieve description information
+    		String descriptionText = getElementTextByTagNameNR(itemData, "Description");
+    		if (descriptionText.length() > MAX_DESCRIPTION_LENGTH) {
+    			descriptionText = descriptionText.substring(0, MAX_DESCRIPTION_LENGTH-1);
+    		}
+    		this.description = descriptionText;
 
     		// Retrieve the location information
     		Element locationData = getElementByTagNameNR(itemData, "Location");
