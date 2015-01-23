@@ -239,6 +239,9 @@ class MyParser {
     	
     	// Write locations with latitude and longitude to file
     	writeLocationsToFile(processedItems, processedUsers.values(), "locations.dat");
+    	
+    	// Write categories to file
+    	writeCategoriesToFile(processedItems, "categories.dat");
     }
     
     static void writeItemsToFile(ArrayList<Item> items, String filename) {
@@ -269,6 +272,16 @@ class MyParser {
     	for (User user: users) {
     		if (user.location.longitude != "" && user.location.latitude != "") {
     			writeDataToFile(filename, user.location.dataFileFormat());
+    		}
+    	}
+    }
+    
+    static void writeCategoriesToFile(ArrayList<Item> items, String filename) {    	
+    	for (Item item: items) {
+    		ArrayList<String> categories = item.categories;
+    		for (String category : categories) {
+    			String categoryDataFileString = category + "," + item.itemId; 
+    			writeDataToFile(filename, categoryDataFileString);
     		}
     	}
     }
@@ -422,15 +435,12 @@ class MyParser {
            this.rating = userData.getAttribute("Rating");           
            this.country = getElementTextByTagNameNR(userData, "Country");
            
-	   	   // Retrieve the location information
-           System.out.println("Start");
-	   	   Element locationData = getElementByTagNameNR(userData, "Location");
-	   	   System.out.println("Middle");
-	   	   this.location = new Location(locationData);
-	   	System.out.println("End");
+	   	   // Retrieve the location information           
+	   	   Element locationData = getElementByTagNameNR(userData, "Location");	   	   
+	   	   this.location = new Location(locationData);	   	
         }
 
-        public String toString() {
+        public String toString() {           
            return "User Id: " + this.userId + "\n" + 
                   "Rating: " + this.rating + "\n" +
                   "Location: " + this.location.name + "\n" + 
@@ -438,9 +448,18 @@ class MyParser {
         }
 
         public String dataFileFormat() {
+        	String locationString;           
+            if (this.location == null) {
+            	System.out.println("Null");
+         	   locationString = "";
+            }
+            else {         	   
+         	   locationString = this.location.name;
+            }
+            
             return this.userId + "," +
                    this.rating + "," +
-                   this.location.name + "," +
+                   locationString + "," +
                    this.country;
         }
     }
@@ -481,8 +500,11 @@ class MyParser {
     	String latitude;
     	String longitude;
     	
-    	public Location(Element locationData) {
+    	public Location(Element locationData) {    		
     		if (locationData == null) {
+    			this.name = "";
+    			this.latitude = "";
+    			this.longitude = "";
     			return;
     		}
     		
