@@ -210,8 +210,9 @@ class MyParser {
     	// Process each item individually
     	for (int i = 0; i < items.length; i++) {
     		Element itemData = items[i];
-    		Item newItem = new Item(itemData); 
-            writeDataToFile("test.dat", newItem.dataFileFormat());
+    		Item newItem = new Item(itemData);
+    		processedItems.add(newItem);
+//            writeDataToFile("test.dat", newItem.dataFileFormat());
     	}
     }
 
@@ -294,6 +295,15 @@ class MyParser {
             	String category = categoryData[i].getTextContent();
             	this.categories.add(category);            	
             }
+            
+            // Retrieve the bidding information
+            Element bidsData = getElementByTagNameNR(itemData, "Bids");
+            Element[] bidDataList = getElementsByTagNameNR(bidsData, "Bid");
+            for (int i = 0; i < bidDataList.length; i++) {
+            	Element bidData = bidDataList[i];
+            	Bid newBid = new Bid(bidData, this.itemId);
+            	this.bids.add(newBid);            	
+            }                       
     	}
     	
     	public String toString() {
@@ -355,10 +365,27 @@ class MyParser {
     }
     
     static class Bid {
-    	String userId;
+    	User user;
     	String itemId;
     	String time;
     	String amount;
+    	
+    	public Bid(Element bidData, String itemId) {
+    		this.itemId = itemId;
+    		this.time = getElementTextByTagNameNR(bidData, "Time");
+    		this.amount = getElementTextByTagNameNR(bidData, "Amount");
+    		
+    		// Get user information from the bidder
+    		Element bidderData = getElementByTagNameNR(bidData, "Bidder");
+    		this.user = new User(bidderData);
+    	}
+    	
+    	public String toString() {
+    		return "User: " + this.user.toString() + "\n" +
+    	           "ItemId: " + this.itemId + "\n" +
+    				"Time: " + this.time + "\n" +
+    	           "Amount: " + this.amount;
+    	}
     }
     
     static class Location {
