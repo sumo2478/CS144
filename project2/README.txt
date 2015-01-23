@@ -14,7 +14,11 @@ Item(ItemId [Primary Key],
 User(UserId, 
      Rating, 
      Location, 
-     Country)  
+     Country)
+
+Location(Name,
+         Latitude,
+         Longitude)       
 
 Category(Name, 
          ItemId)

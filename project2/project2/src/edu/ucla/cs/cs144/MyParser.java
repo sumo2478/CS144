@@ -205,6 +205,8 @@ class MyParser {
     	ArrayList<Bid> processedBids = new ArrayList<Bid>();
     	HashSet<User> processedUsers = new HashSet<User>();
     	
+        // TODO: remove data in the current file?
+
     	// Process each item individually
     	for (int i = 0; i < items.length; i++) {
     		Element itemData = items[i];
@@ -254,6 +256,8 @@ class MyParser {
     	String firstBid;
     	String numBids;
     	String description;    	
+        Location location;
+        String country;
     	String started;
     	String ended;
     	
@@ -271,9 +275,25 @@ class MyParser {
     		this.buyPrice = getElementTextByTagNameNR(itemData, "Buy_Price");
     		this.firstBid = getElementTextByTagNameNR(itemData, "First_Bid");
     		this.numBids = getElementTextByTagNameNR(itemData, "Number_of_Bids");
-    		this.description = getElementTextByTagNameNR(itemData, "Description");
+    		this.description = getElementTextByTagNameNR(itemData, "Description");    		    		    		
+            this.country = getElementTextByTagNameNR(itemData, "Country");
     		this.started = getElementTextByTagNameNR(itemData, "Started");
     		this.ended = getElementTextByTagNameNR(itemData, "Ends");
+
+    		// Retrieve the location information
+    		Element locationData = getElementByTagNameNR(itemData, "Location");
+    		this.location = new Location(locationData);
+    		
+    		// Retrieve the seller information
+            Element userData = getElementByTagNameNR(itemData, "Seller");
+            this.seller = new User(userData);
+            
+            // Retrieve the categories information
+            Element[] categoryData = getElementsByTagNameNR(itemData, "Category");
+            for (int i = 0; i < categoryData.length; i++) {
+            	String category = categoryData[i].getTextContent();
+            	this.categories.add(category);            	
+            }
     	}
     	
     	public String toString() {
@@ -284,6 +304,8 @@ class MyParser {
     			   "First Bid: " + this.firstBid + "\n" + 
     			   "Number of Bids: " + this.numBids + "\n" +
     			   "Description: " + this.description + "\n" +
+                   "Location: " + this.location.name + "\n" +
+                   "Country: " + this.country + "\n" +
     			   "Started: " + this.started + "\n" + 
     			   "Ended: " + this.ended + "\n";
     	}
@@ -297,6 +319,8 @@ class MyParser {
                    this.firstBid + "," +
                    this.numBids + "," +
                    this.description + "," +
+                   this.location.name + "," +
+                   this.country + "," +
                    this.started + "," +
                    this.ended;
         }
@@ -307,6 +331,27 @@ class MyParser {
     	String rating;
     	String location;
     	String country;
+
+        public User(Element userData) {
+           this.userId = userData.getAttribute("UserID");
+           this.rating = userData.getAttribute("Rating");
+           this.location = getElementTextByTagNameNR(userData, "Location");
+           this.country = getElementTextByTagNameNR(userData, "Country");
+        }
+
+        public String toString() {
+           return "User Id: " + this.userId + "\n" + 
+                  "Rating: " + this.rating + "\n" +
+                  "Location: " + this.location + "\n" + 
+                  "Country: " + this.country;
+        }
+
+        public String dataFileFormat() {
+            return this.userId + "," +
+                   this.rating + "," +
+                   this.location + "," +
+                   this.country;
+        }
     }
     
     static class Bid {
@@ -314,6 +359,24 @@ class MyParser {
     	String itemId;
     	String time;
     	String amount;
+    }
+    
+    static class Location {
+    	String name;
+    	String latitude;
+    	String longitude;
+    	
+    	public Location(Element locationData) {
+    		this.name = locationData.getTextContent();
+    		this.longitude = locationData.getAttribute("Longitude");
+    		this.latitude = locationData.getAttribute("Latitude");
+    	}
+    	
+    	public String toString() {
+    		return "Name: " + this.name + "\n" + 
+    			   "Longitude: " + this.longitude + "\n" +
+    			   "Latitude: " + this.latitude;
+    	}
     }
 
     public static void main (String[] args) {
