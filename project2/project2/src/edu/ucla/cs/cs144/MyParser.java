@@ -226,7 +226,6 @@ class MyParser {
     		for (int j = 0; j < processedBids.size(); j++) {
     			addUserToHashMap(processedUsers, processedBids.get(j).user);
     		}    		
-//            writeDataToFile("test.dat", newItem.dataFileFormat());
     	}
     	
     	// Write items to file
@@ -235,9 +234,8 @@ class MyParser {
     	// Write users to file
     	writeUsersToFile(processedUsers.values(), "users.dat");
     	
-//    	for (User user : processedUsers.values()) {
-//    		System.out.println(user);
-//    	}
+    	// Write bids to file    	
+    	writeBidsToFile(processedBids, "bids.dat");
     }
     
     static void writeItemsToFile(ArrayList<Item> items, String filename) {
@@ -249,6 +247,12 @@ class MyParser {
     static void writeUsersToFile(Collection<User> users, String filename) {
     	for (User user: users) {
     		writeDataToFile(filename, user.dataFileFormat());
+    	}
+    }
+    
+    static void writeBidsToFile(ArrayList<Bid> bids, String filename) {
+    	for (Bid bid: bids) {
+    		writeDataToFile(filename, bid.dataFileFormat());
     	}
     }
     
@@ -439,6 +443,13 @@ class MyParser {
     	           "ItemId: " + this.itemId + "\n" +
     				"Time: " + this.time + "\n" +
     	           "Amount: " + this.amount;
+    	}
+    	
+    	public String dataFileFormat() {
+    		return this.user.userId + "," +
+    	           this.itemId + "," +
+    				this.time + "," +
+    	           this.amount;
     	}
     }
     
