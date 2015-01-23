@@ -245,44 +245,104 @@ class MyParser {
     }
     
     static void writeItemsToFile(ArrayList<Item> items, String filename) {
-    	for (Item item : items) {
-    		writeDataToFile(filename, item.dataFileFormat());
+    	try {
+            FileWriter fileWriter = new FileWriter(filename, true); 
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        	
+        	for (Item item : items) {
+        		writeDataToFile(bufferedWriter, item.dataFileFormat());
+        	}    
+        	
+        	bufferedWriter.close();
+    	}
+    	catch (IOException e) {
+            System.out.println("Error writing to file");
+            e.printStackTrace();
+            System.exit(3);
     	}
     }
     
-    static void writeUsersToFile(Collection<User> users, String filename) {
-    	for (User user: users) {
-    		writeDataToFile(filename, user.dataFileFormat());
+    static void writeUsersToFile(Collection<User> users, String filename) {   	
+    	try {
+            FileWriter fileWriter = new FileWriter(filename, true); 
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        	
+        	for (User user: users) {
+        		writeDataToFile(bufferedWriter, user.dataFileFormat());
+        	}   
+        	
+        	bufferedWriter.close();
+    	}
+    	catch (IOException e) {
+            System.out.println("Error writing to file");
+            e.printStackTrace();
+            System.exit(3);
     	}
     }
     
-    static void writeBidsToFile(ArrayList<Bid> bids, String filename) {
-    	for (Bid bid: bids) {
-    		writeDataToFile(filename, bid.dataFileFormat());
+    static void writeBidsToFile(ArrayList<Bid> bids, String filename) {    	
+    	try {
+            FileWriter fileWriter = new FileWriter(filename, true); 
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        	
+        	for (Bid bid: bids) {
+        		writeDataToFile(bufferedWriter, bid.dataFileFormat());
+        	}  
+        	
+        	bufferedWriter.close();
+    	}
+    	catch (IOException e) {
+            System.out.println("Error writing to file");
+            e.printStackTrace();
+            System.exit(3);
     	}
     }
     
     static void writeLocationsToFile(ArrayList<Item> items, Collection<User> users, String filename) {
-    	for (Item item: items) {
-    		if (item.location.longitude != "" && item.location.latitude != "") {
-    			writeDataToFile(filename, item.location.dataFileFormat());
-    		}
+    	try {
+            FileWriter fileWriter = new FileWriter(filename, true); 
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        	
+        	for (Item item: items) {
+        		if (item.location.longitude != "" && item.location.latitude != "") {
+        			writeDataToFile(bufferedWriter, item.location.dataFileFormat());
+        		}
+        	}
+        	
+        	for (User user: users) {
+        		if (user.location.longitude != "" && user.location.latitude != "") {
+        			writeDataToFile(bufferedWriter, user.location.dataFileFormat());
+        		}
+        	}
+        	
+        	bufferedWriter.close();
     	}
-    	
-    	for (User user: users) {
-    		if (user.location.longitude != "" && user.location.latitude != "") {
-    			writeDataToFile(filename, user.location.dataFileFormat());
-    		}
+    	catch (IOException e) {
+            System.out.println("Error writing to file");
+            e.printStackTrace();
+            System.exit(3);
     	}
     }
     
-    static void writeCategoriesToFile(ArrayList<Item> items, String filename) {    	
-    	for (Item item: items) {
-    		ArrayList<String> categories = item.categories;
-    		for (String category : categories) {
-    			String categoryDataFileString = category + "," + item.itemId; 
-    			writeDataToFile(filename, categoryDataFileString);
-    		}
+    static void writeCategoriesToFile(ArrayList<Item> items, String filename) {    	   	
+    	try {
+            FileWriter fileWriter = new FileWriter(filename, true); 
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+        	
+        	for (Item item: items) {
+        		ArrayList<String> categories = item.categories;
+        		for (String category : categories) {
+        			String categoryDataFileString = category + "," + item.itemId; 
+        			writeDataToFile(bufferedWriter, categoryDataFileString);
+        		}
+        	}
+        	
+        	bufferedWriter.close();
+    	}
+    	catch (IOException e) {
+            System.out.println("Error writing to file");
+            e.printStackTrace();
+            System.exit(3);
     	}
     }
     
@@ -309,14 +369,10 @@ class MyParser {
      * @param fileName - the string of the file name
      * @param data - the data string to write to the file
      */
-    static void writeDataToFile(String fileName, String data) {
+    static void writeDataToFile(BufferedWriter bufferedWriter, String data) {
         try {
-            FileWriter fileWriter = new FileWriter(fileName, true); 
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-
             bufferedWriter.append(data);
-            bufferedWriter.newLine();
-            bufferedWriter.close();
+            bufferedWriter.newLine();            
         }
         catch (IOException e) {
             System.out.println("Error writing to file");
