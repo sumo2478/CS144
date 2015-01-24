@@ -28,7 +28,7 @@ package edu.ucla.cs.cs144;
 import java.io.*;
 import java.text.*;
 import java.util.*;
-import java.io.*;
+import java.text.SimpleDateFormat;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -382,6 +382,24 @@ class MyParser {
         }
     }
     
+    static String convertDateToDatabaseFormat(String dateToFormat) {
+    	String newDate = "";
+    	try {
+    		SimpleDateFormat originalFormat = new SimpleDateFormat("MMM-dd-yy HH:mm:ss");
+        	Date parsedDate = originalFormat.parse(dateToFormat);
+        	
+        	SimpleDateFormat newFormat = new SimpleDateFormat("YYYY-MM-dd HH:MM:SS");
+        	newDate = newFormat.format(parsedDate);        	        
+    	}
+    	catch (ParseException e) {
+            System.out.println("Error parsing date");
+            e.printStackTrace();
+            System.exit(3);
+    	}
+    	
+    	return newDate;
+    }
+	    
     static class dataObjects {
     	ArrayList<Item> processedItems;
     	ArrayList<Bid> processedBids;
@@ -422,8 +440,8 @@ class MyParser {
     		this.firstBid = getElementTextByTagNameNR(itemData, "First_Bid");
     		this.numBids = getElementTextByTagNameNR(itemData, "Number_of_Bids");    		    		    		    		
             this.country = getElementTextByTagNameNR(itemData, "Country");
-    		this.started = getElementTextByTagNameNR(itemData, "Started");
-    		this.ended = getElementTextByTagNameNR(itemData, "Ends");
+    		this.started = convertDateToDatabaseFormat(getElementTextByTagNameNR(itemData, "Started"));
+    		this.ended = convertDateToDatabaseFormat(getElementTextByTagNameNR(itemData, "Ends"));
     		
     		// Retrieve description information
     		String descriptionText = getElementTextByTagNameNR(itemData, "Description");
@@ -535,7 +553,7 @@ class MyParser {
     	
     	public Bid(Element bidData, String itemId) {
     		this.itemId = itemId;
-    		this.time = getElementTextByTagNameNR(bidData, "Time");
+    		this.time = convertDateToDatabaseFormat(getElementTextByTagNameNR(bidData, "Time"));
     		this.amount = getElementTextByTagNameNR(bidData, "Amount");
     		
     		// Get user information from the bidder
