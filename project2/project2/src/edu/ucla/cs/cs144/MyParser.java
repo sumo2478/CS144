@@ -43,6 +43,11 @@ import org.xml.sax.ErrorHandler;
 
 
 class MyParser {
+	// Processed Variables
+	static HashSet<Item> processedItems = new HashSet<Item>();
+	static HashSet<Bid> processedBids = new HashSet<Bid>();
+	static HashMap<String, User> processedUsers = new HashMap<String, User>();
+	
     
 	static final int MAX_DESCRIPTION_LENGTH = 4000;
     static final String columnSeparator = "|*|";
@@ -201,11 +206,7 @@ class MyParser {
         /**************************************************************/        
     }
     
-    static void processItems(Element[] items) {
-    	ArrayList<Item> processedItems = new ArrayList<Item>();
-    	ArrayList<Bid> processedBids = new ArrayList<Bid>();
-    	HashMap<String, User> processedUsers = new HashMap<String, User>();
-    	
+    static void processItems(Element[] items) {    	
         // TODO: remove data in the current file?
 
     	// Process each item individually
@@ -221,14 +222,16 @@ class MyParser {
     		
     		// Add the seller to the user hash set
     		User seller = newItem.seller;
-    		addUserToHashMap(processedUsers, seller);
+    		addUserToHashMap(seller);
     		
     		// Add all the bidders to the user hash set
-    		for (int j = 0; j < processedBids.size(); j++) {
-    			addUserToHashMap(processedUsers, processedBids.get(j).user);
+    		for (Bid bid : processedBids) {
+    			addUserToHashMap(bid.user);
     		}    		
-    	}
-    	
+    	}    
+    }
+    
+    static void writeObjectsToFile() {
     	// Write items to file
     	writeItemsToFile(processedItems, "items.dat");
     	
@@ -245,7 +248,7 @@ class MyParser {
     	writeCategoriesToFile(processedItems, "categories.dat");
     }
     
-    static void writeItemsToFile(ArrayList<Item> items, String filename) {
+    static void writeItemsToFile(HashSet<Item> items, String filename) {
     	try {
             FileWriter fileWriter = new FileWriter(filename, true); 
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
@@ -281,7 +284,7 @@ class MyParser {
     	}
     }
     
-    static void writeBidsToFile(ArrayList<Bid> bids, String filename) {    	
+    static void writeBidsToFile(HashSet<Bid> bids, String filename) {    	
     	try {
             FileWriter fileWriter = new FileWriter(filename, true); 
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
@@ -299,7 +302,7 @@ class MyParser {
     	}
     }
     
-    static void writeLocationsToFile(ArrayList<Item> items, Collection<User> users, String filename) {
+    static void writeLocationsToFile(HashSet<Item> items, Collection<User> users, String filename) {
     	try {
             FileWriter fileWriter = new FileWriter(filename, true); 
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
@@ -325,7 +328,7 @@ class MyParser {
     	}
     }
     
-    static void writeCategoriesToFile(ArrayList<Item> items, String filename) {    	   	
+    static void writeCategoriesToFile(HashSet<Item> items, String filename) {    	   	
     	try {
             FileWriter fileWriter = new FileWriter(filename, true); 
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
@@ -347,16 +350,15 @@ class MyParser {
     	}
     }
     
-    static void addUserToHashMap(HashMap<String, User> processedUsers, User newUser) {
+    static void addUserToHashMap(User newUser) {
     	String userId = newUser.userId;
     	
 		// If the user is already in the hash map
 		User storedUser = processedUsers.get(userId);
 		if (storedUser != null) {
 			// If the user data doesn't have location and the current user does then replace the old one with the new one
-			if (storedUser.location == null && newUser.location != null) {
-				System.out.println("Replacing Old: " + storedUser.toString() + " With New: " + newUser.toString());
-				processedUsers.put(userId, newUser);
+			if (storedUser.location.name.equals("") && !newUser.location.name.equals("")) {				
+				processedUsers.put(userId, newUser);				
 			}
 		}    			
 		// Otherwise add in the current user
@@ -635,5 +637,7 @@ class MyParser {
             File currentFile = new File(args[i]);
             processFile(currentFile);
         }
+        
+        writeObjectsToFile();
     }
 }
