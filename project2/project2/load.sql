@@ -1,0 +1,5 @@
+-- Load Items into Database
+LOAD DATA LOCAL INFILE 'Item.dat' 
+INTO TABLE Item 
+FIELDS OPTIONALLY ENCLOSED BY '"'
+TERMINATED BY '|*|';
