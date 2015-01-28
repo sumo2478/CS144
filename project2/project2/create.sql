@@ -46,5 +46,7 @@ CREATE TABLE Bid
 	ItemId VARCHAR(20),  	-- The Id of the item
 	Time TIMESTAMP,      	-- The time the bid was made
 	Amount DECIMAL(8, 2),   -- The amount the bid is for
+	FOREIGN KEY (ItemId) REFERENCES Item(ItemId),
+	FOREIGN KEY (UserId) REFERENCES User(UserId),
 	PRIMARY KEY(UserId, ItemId, Time)
 );
