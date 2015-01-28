@@ -235,16 +235,16 @@ class MyParser {
     
     static void writeObjectsToFile() {
     	// Write items to file
-    	writeItemsToFile(processedItems, "items.dat");
+    	writeItemsToFile(processedItems, "Item.dat");
     	
     	// Write users to file
-    	writeUsersToFile(processedUsers.values(), "users.dat");
+    	writeUsersToFile(processedUsers.values(), "User.dat");
     	
     	// Write bids to file    	
     	writeBidsToFile(processedBids, "bids.dat");
     	
     	// Write locations with latitude and longitude to file
-    	writeLocationsToFile(processedItems, processedUsers.values(), "locations.dat");
+    	//writeLocationsToFile(processedItems, processedUsers.values(), "locations.dat");
     	
     	// Write categories to file
     	writeCategoriesToFile(processedItems, "categories.dat");
@@ -304,6 +304,7 @@ class MyParser {
     	}
     }
     
+    /*
     static void writeLocationsToFile(ArrayList<Item> items, Collection<User> users, String filename) {
     	try {
             FileWriter fileWriter = new FileWriter(filename, true); 
@@ -328,7 +329,7 @@ class MyParser {
             e.printStackTrace();
             System.exit(3);
     	}
-    }
+    }*/
     
     static void writeCategoriesToFile(ArrayList<Item> items, String filename) {    	   	
     	try {
@@ -359,7 +360,7 @@ class MyParser {
 		User storedUser = processedUsers.get(userId);
 		if (storedUser != null) {
 			// If the user data doesn't have location and the current user does then replace the old one with the new one
-			if (storedUser.location.name.equals("") && !newUser.location.name.equals("")) {				
+			if (storedUser.location.equals("") && !newUser.location.equals("")) {				
 				processedUsers.put(userId, newUser);				
 			}
 		}    			
@@ -404,16 +405,12 @@ class MyParser {
     	return newDate;
     }
 	    
-    static class dataObjects {
-    	ArrayList<Item> processedItems;
-    	ArrayList<Bid> processedBids;
-    	HashSet<User> processedUsers;
-    	
-    	public dataObjects() {
-        	this.processedItems = new ArrayList<Item>();
-        	this.processedBids = new ArrayList<Bid>();
-        	this.processedUsers = new HashSet<User>();
-    	}
+    static String encloseStringInQuotes(String stringToEnclose) {
+    	return "\"" + stringToEnclose + "\"";
+    }
+    
+    static String escapeQuotes(String stringToEscape) {
+    	return stringToEscape.replace("\"", "\\\"");
     }
     
     static class Item {
@@ -424,7 +421,9 @@ class MyParser {
     	String firstBid;
     	String numBids;
     	String description;    	
-        Location location;
+        String location;
+        String latitude;
+        String longitude;
         String country;
     	String started;
     	String ended;
@@ -438,12 +437,12 @@ class MyParser {
     		this.bids = new ArrayList<Bid>();
     		
     		this.itemId = itemData.getAttribute("ItemID");
-    		this.name = getElementTextByTagNameNR(itemData, "Name");
+    		this.name = escapeQuotes(getElementTextByTagNameNR(itemData, "Name"));
     		this.currently = getElementTextByTagNameNR(itemData, "Currently");    
     		this.buyPrice = getElementTextByTagNameNR(itemData, "Buy_Price");
     		this.firstBid = getElementTextByTagNameNR(itemData, "First_Bid");
     		this.numBids = getElementTextByTagNameNR(itemData, "Number_of_Bids");    		    		    		    		
-            this.country = getElementTextByTagNameNR(itemData, "Country");
+            this.country = escapeQuotes(getElementTextByTagNameNR(itemData, "Country"));
     		this.started = convertDateToDatabaseFormat(getElementTextByTagNameNR(itemData, "Started"));
     		this.ended = convertDateToDatabaseFormat(getElementTextByTagNameNR(itemData, "Ends"));
     		
@@ -452,11 +451,14 @@ class MyParser {
     		if (descriptionText.length() > MAX_DESCRIPTION_LENGTH) {
     			descriptionText = descriptionText.substring(0, MAX_DESCRIPTION_LENGTH-1);
     		}
-    		this.description = descriptionText;
+    		this.description = escapeQuotes(descriptionText);
 
     		// Retrieve the location information
     		Element locationData = getElementByTagNameNR(itemData, "Location");
-    		this.location = new Location(locationData);
+    		Location processedLocationInfo = new Location(locationData);
+    		this.location = escapeQuotes(processedLocationInfo.name);
+    		this.latitude = escapeQuotes(processedLocationInfo.latitude);
+    		this.longitude = escapeQuotes(processedLocationInfo.longitude);
     		
     		// Retrieve the seller information
             Element userData = getElementByTagNameNR(itemData, "Seller");
@@ -465,7 +467,7 @@ class MyParser {
             // Retrieve the categories information
             Element[] categoryData = getElementsByTagNameNR(itemData, "Category");
             for (int i = 0; i < categoryData.length; i++) {
-            	String category = categoryData[i].getTextContent();
+            	String category = escapeQuotes(categoryData[i].getTextContent());
             	this.categories.add(category);            	
             }
             
@@ -487,65 +489,71 @@ class MyParser {
     			   "First Bid: " + this.firstBid + "\n" + 
     			   "Number of Bids: " + this.numBids + "\n" +
     			   "Description: " + this.description + "\n" +
-                   "Location: " + this.location.name + "\n" +
+                   "Location: " + this.location + "\n" +
+    			   "Longitude: " + this.longitude + "\n" +
+                   "Latitude: " + this.latitude + "\n" +
                    "Country: " + this.country + "\n" +
     			   "Started: " + this.started + "\n" + 
-    			   "Ended: " + this.ended + "\n";
+    			   "Ended: " + this.ended + "\n" + 
+    			   "Seller: " + this.seller.userId;
     	}
 
         // Returns a string with the proper format for a dat file
         public String dataFileFormat() {
-            return this.itemId + "," +
-                   this.name + "," + 
-                   this.currently + "," +
-                   this.buyPrice + "," +
-                   this.firstBid + "," +
-                   this.numBids + "," +
-                   this.description + "," +
-                   this.location.name + "," +
-                   this.country + "," +
-                   this.started + "," +
-                   this.ended;
+            return encloseStringInQuotes(this.itemId) + columnSeparator +
+            	   encloseStringInQuotes(this.name) + columnSeparator + 
+                   encloseStringInQuotes(this.currently) + columnSeparator +
+                   encloseStringInQuotes(this.buyPrice) + columnSeparator +
+                   encloseStringInQuotes(this.firstBid) + columnSeparator +
+                   encloseStringInQuotes(this.numBids) + columnSeparator +
+                   encloseStringInQuotes(this.description) + columnSeparator +
+                   encloseStringInQuotes(this.seller.userId) + columnSeparator +
+                   encloseStringInQuotes(this.location) + columnSeparator +
+                   encloseStringInQuotes(this.latitude) + columnSeparator +
+                   encloseStringInQuotes(this.longitude) + columnSeparator +
+                   encloseStringInQuotes(this.country) + columnSeparator +
+                   encloseStringInQuotes(this.started) + columnSeparator +
+                   encloseStringInQuotes(this.ended);
         }
     }
     
     static class User {
     	String userId;
     	String rating;
-    	Location location;
+    	String location;
+    	String latitude;
+    	String longitude;
     	String country;
 
         public User(Element userData) {
-           this.userId = userData.getAttribute("UserID");
+           this.userId = escapeQuotes(userData.getAttribute("UserID"));
            this.rating = userData.getAttribute("Rating");           
-           this.country = getElementTextByTagNameNR(userData, "Country");
+           this.country = escapeQuotes(getElementTextByTagNameNR(userData, "Country"));
            
 	   	   // Retrieve the location information           
-	   	   Element locationData = getElementByTagNameNR(userData, "Location");	   	   
-	   	   this.location = new Location(locationData);	   	
+	   		Element locationData = getElementByTagNameNR(userData, "Location");
+	   		Location processedLocationInfo = new Location(locationData);
+	   		this.location = escapeQuotes(processedLocationInfo.name);
+	   		this.latitude = processedLocationInfo.latitude;
+	   		this.longitude = processedLocationInfo.longitude;
         }
 
         public String toString() {           
            return "User Id: " + this.userId + "\n" + 
                   "Rating: " + this.rating + "\n" +
-                  "Location: " + this.location.name + "\n" + 
+                  "Location: " + this.location + "\n" +
+                  "Latitude: " + this.latitude + "\n" +
+                  "Longitude: " + this.longitude + "\n" +
                   "Country: " + this.country;
         }
 
-        public String dataFileFormat() {
-        	String locationString;           
-            if (this.location == null) {
-            	System.out.println("Null");
-         	   locationString = "";
-            }
-            else {         	   
-         	   locationString = this.location.name;
-            }
-            
-            return this.userId + "," +
-                   this.rating + "," +
-                   locationString + "," +
-                   this.country;
+        public String dataFileFormat() {            
+            return encloseStringInQuotes(this.userId) + columnSeparator +
+                   encloseStringInQuotes(this.rating) + columnSeparator +
+                   encloseStringInQuotes(this.location) + columnSeparator +
+                   encloseStringInQuotes(this.latitude) + columnSeparator +
+                   encloseStringInQuotes(this.longitude) + columnSeparator +
+                   encloseStringInQuotes(this.country);
         }
     }
     

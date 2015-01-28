@@ -4,6 +4,8 @@ CREATE TABLE User
 	UserId VARCHAR(100),     -- The Id of the user
 	Rating INT, 		     -- The rating of the user
 	Location VARCHAR(100),   -- User's location
+	Latitude VARCHAR(20),    -- User's latitude
+	Longitude VARCHAR(20),   -- User's longitude
 	Country VARCHAR(100),    -- User's country 
 	PRIMARY KEY(UserId)      -- The UserId should be unique
 );
@@ -12,6 +14,7 @@ CREATE TABLE User
 CREATE TABLE Item
 (
 	ItemId VARCHAR(20),        -- Item Id
+	Name VARCHAR(200),         -- The Item name
 	Currently DECIMAL(8, 2),   -- Current bid price
 	Buy_Price DECIMAL(8, 2),   -- Asking buy price
 	First_Bid DECIMAL(8, 2),   -- First bid price
