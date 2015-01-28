@@ -29,10 +29,13 @@ import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.text.SimpleDateFormat;
+
+import javax.swing.text.NumberFormatter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -241,13 +244,10 @@ class MyParser {
     	writeUsersToFile(processedUsers.values(), "User.dat");
     	
     	// Write bids to file    	
-    	writeBidsToFile(processedBids, "bids.dat");
-    	
-    	// Write locations with latitude and longitude to file
-    	//writeLocationsToFile(processedItems, processedUsers.values(), "locations.dat");
+    	writeBidsToFile(processedBids, "Bid.dat");
     	
     	// Write categories to file
-    	writeCategoriesToFile(processedItems, "categories.dat");
+    	writeCategoriesToFile(processedItems, "Category.dat");
     }
     
     static void writeItemsToFile(ArrayList<Item> items, String filename) {
@@ -304,33 +304,6 @@ class MyParser {
     	}
     }
     
-    /*
-    static void writeLocationsToFile(ArrayList<Item> items, Collection<User> users, String filename) {
-    	try {
-            FileWriter fileWriter = new FileWriter(filename, true); 
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-        	
-        	for (Item item: items) {
-        		if (item.location.longitude != "" && item.location.latitude != "") {
-        			writeDataToFile(bufferedWriter, item.location.dataFileFormat());
-        		}
-        	}
-        	
-        	for (User user: users) {
-        		if (user.location.longitude != "" && user.location.latitude != "") {
-        			writeDataToFile(bufferedWriter, user.location.dataFileFormat());
-        		}
-        	}
-        	
-        	bufferedWriter.close();
-    	}
-    	catch (IOException e) {
-            System.out.println("Error writing to file");
-            e.printStackTrace();
-            System.exit(3);
-    	}
-    }*/
-    
     static void writeCategoriesToFile(ArrayList<Item> items, String filename) {    	   	
     	try {
             FileWriter fileWriter = new FileWriter(filename, true); 
@@ -339,7 +312,7 @@ class MyParser {
         	for (Item item: items) {
         		ArrayList<String> categories = item.categories;
         		for (String category : categories) {
-        			String categoryDataFileString = category + "," + item.itemId; 
+        			String categoryDataFileString = category + columnSeparator + item.itemId; 
         			writeDataToFile(bufferedWriter, categoryDataFileString);
         		}
         	}
@@ -393,7 +366,7 @@ class MyParser {
     		SimpleDateFormat originalFormat = new SimpleDateFormat("MMM-dd-yy HH:mm:ss");
         	Date parsedDate = originalFormat.parse(dateToFormat);
         	
-        	SimpleDateFormat newFormat = new SimpleDateFormat("YYYY-MM-dd HH:MM:SS");
+        	SimpleDateFormat newFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");
         	newDate = newFormat.format(parsedDate);        	        
     	}
     	catch (ParseException e) {
@@ -411,6 +384,33 @@ class MyParser {
     
     static String escapeQuotes(String stringToEscape) {
     	return stringToEscape.replace("\"", "\\\"");
+    }
+    
+    /*
+     * Converts the string from $XX.XX into XX.XX format
+     * @param stringToConvert - The string in the format $XX.XX to convert
+     * @return converted string int he format XX.XX
+     */
+    static String convertToDigitFormat(String stringToConvert) {
+    	if (stringToConvert.equals("")) {
+    		return stringToConvert;
+    	}
+    	else {
+    		NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.US);
+    		
+    		try {
+    			Number parsedCurrency = currencyFormatter.parse(stringToConvert);
+    			currencyFormatter.setGroupingUsed(false);
+    			stringToConvert = currencyFormatter.format(parsedCurrency.doubleValue());    			
+    		}
+    		catch (ParseException e) {
+    			System.out.println("Failed to parse currency");
+    			e.printStackTrace();
+    			System.exit(3);
+    		}    		
+    		
+    		return stringToConvert.substring(1);
+    	}
     }
     
     static class Item {
@@ -438,9 +438,9 @@ class MyParser {
     		
     		this.itemId = itemData.getAttribute("ItemID");
     		this.name = escapeQuotes(getElementTextByTagNameNR(itemData, "Name"));
-    		this.currently = getElementTextByTagNameNR(itemData, "Currently");    
-    		this.buyPrice = getElementTextByTagNameNR(itemData, "Buy_Price");
-    		this.firstBid = getElementTextByTagNameNR(itemData, "First_Bid");
+    		this.currently = convertToDigitFormat(getElementTextByTagNameNR(itemData, "Currently"));    
+    		this.buyPrice = convertToDigitFormat(getElementTextByTagNameNR(itemData, "Buy_Price"));
+    		this.firstBid = convertToDigitFormat(getElementTextByTagNameNR(itemData, "First_Bid"));
     		this.numBids = getElementTextByTagNameNR(itemData, "Number_of_Bids");    		    		    		    		
             this.country = escapeQuotes(getElementTextByTagNameNR(itemData, "Country"));
     		this.started = convertDateToDatabaseFormat(getElementTextByTagNameNR(itemData, "Started"));
@@ -566,7 +566,7 @@ class MyParser {
     	public Bid(Element bidData, String itemId) {
     		this.itemId = itemId;
     		this.time = convertDateToDatabaseFormat(getElementTextByTagNameNR(bidData, "Time"));
-    		this.amount = getElementTextByTagNameNR(bidData, "Amount");
+    		this.amount = convertToDigitFormat(getElementTextByTagNameNR(bidData, "Amount"));
     		
     		// Get user information from the bidder
     		Element bidderData = getElementByTagNameNR(bidData, "Bidder");
@@ -581,10 +581,10 @@ class MyParser {
     	}
     	
     	public String dataFileFormat() {
-    		return this.user.userId + "," +
-    	           this.itemId + "," +
-    				this.time + "," +
-    	           this.amount;
+    		return encloseStringInQuotes(this.user.userId) + columnSeparator +
+    			   encloseStringInQuotes(this.itemId) + columnSeparator +
+    			   encloseStringInQuotes(this.time) + columnSeparator +
+    	           encloseStringInQuotes(this.amount);
     	}
     }
     

@@ -32,7 +32,7 @@ Bid(UserId, // User ID of the buyer
     ItemId, 
     Time, 
     Amount
-    PRIMARY KEY(UserId, ItemId, Amount)
+    PRIMARY KEY(UserId, ItemId, Time)
     )   
 
 2. 

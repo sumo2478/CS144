@@ -38,3 +38,13 @@ CREATE TABLE Category
 	ItemId VARCHAR(20),        -- The item id of the category
 	FOREIGN KEY (ItemId) REFERENCES Item(ItemId) -- We check to make sure the Item id exists in the Item table
 );
+
+-- Create Bid From bid.dat
+CREATE TABLE Bid
+(
+	UserId VARCHAR(100), 	-- The Id of the user
+	ItemId VARCHAR(20),  	-- The Id of the item
+	Time TIMESTAMP,      	-- The time the bid was made
+	Amount DECIMAL(8, 2),   -- The amount the bid is for
+	PRIMARY KEY(UserId, ItemId, Time)
+);
