@@ -44,8 +44,10 @@ import org.xml.sax.ErrorHandler;
 
 class MyParser {
 	// Processed Variables
-	static HashSet<Item> processedItems = new HashSet<Item>();
-	static HashSet<Bid> processedBids = new HashSet<Bid>();
+	//static HashSet<Item> processedItems = new HashSet<Item>();
+	//static HashSet<Bid> processedBids = new HashSet<Bid>();
+	static ArrayList<Item> processedItems = new ArrayList<Item>();
+	static ArrayList<Bid> processedBids = new ArrayList<Bid>();
 	static HashMap<String, User> processedUsers = new HashMap<String, User>();
 	
     
@@ -248,7 +250,7 @@ class MyParser {
     	writeCategoriesToFile(processedItems, "categories.dat");
     }
     
-    static void writeItemsToFile(HashSet<Item> items, String filename) {
+    static void writeItemsToFile(ArrayList<Item> items, String filename) {
     	try {
             FileWriter fileWriter = new FileWriter(filename, true); 
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
@@ -284,7 +286,7 @@ class MyParser {
     	}
     }
     
-    static void writeBidsToFile(HashSet<Bid> bids, String filename) {    	
+    static void writeBidsToFile(ArrayList<Bid> bids, String filename) {    	
     	try {
             FileWriter fileWriter = new FileWriter(filename, true); 
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
@@ -302,7 +304,7 @@ class MyParser {
     	}
     }
     
-    static void writeLocationsToFile(HashSet<Item> items, Collection<User> users, String filename) {
+    static void writeLocationsToFile(ArrayList<Item> items, Collection<User> users, String filename) {
     	try {
             FileWriter fileWriter = new FileWriter(filename, true); 
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
@@ -328,7 +330,7 @@ class MyParser {
     	}
     }
     
-    static void writeCategoriesToFile(HashSet<Item> items, String filename) {    	   	
+    static void writeCategoriesToFile(ArrayList<Item> items, String filename) {    	   	
     	try {
             FileWriter fileWriter = new FileWriter(filename, true); 
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);

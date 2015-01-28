@@ -1,33 +1,47 @@
 1. Relations
 ------------
-Item(ItemId [Primary Key], 
+Item(ItemId, 
      Name, 
      Currently, 
      Buy_Price, 
      First_Bid, 
      Number_of_bids,
      Description,
-     UserId, // User ID of the seller
+     Seller, // User ID of the seller
+     Location,
+     Latitude,
+     Longitude,
+     Country,
      Started,
-     Ends)
+     Ends,
+     PRIMARY KEY(ItemId)
+     )
 
 User(UserId, 
      Rating, 
      Location, 
-     Country)
+     Country,
+     PRIMARY KEY(UserId))   
 
-Location(Name,
-         Latitude,
-         Longitude)       
-
-Category(Name, 
-         ItemId)
+Category(CategoryName, 
+         ItemId,
+         PRIMARY KEY (Name, ItemId)
+         )
 
 Bid(UserId, // User ID of the buyer
     ItemId, 
     Time, 
-    Amount)   
+    Amount
+    PRIMARY KEY(UserId, ItemId, Amount)
+    )   
 
-2. There are no           
+2. 
 
+ItemId -> Name, Currently, Buy_Price, First_Bid, Number_of_bids, Description, Seller, Location, Latitude, Longitude, Country, Started, Ends
+UserId -> Rating, Location, Country
+UserId, ItemId, Time -> Amount
+
+3. All relations are in BCNF
+
+4. Idk if relations are in 4NF
 
