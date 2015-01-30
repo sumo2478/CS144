@@ -30,7 +30,6 @@ import java.text.*;
 import java.util.*;
 import java.text.SimpleDateFormat;
 
-import javax.swing.text.NumberFormatter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -46,13 +45,9 @@ import org.xml.sax.ErrorHandler;
 
 
 class MyParser {
-	// Processed Variables
-	//static HashSet<Item> processedItems = new HashSet<Item>();
-	//static HashSet<Bid> processedBids = new HashSet<Bid>();
-	static ArrayList<Item> processedItems = new ArrayList<Item>();
-	static ArrayList<Bid> processedBids = new ArrayList<Bid>();
-	static HashMap<String, User> processedUsers = new HashMap<String, User>();
-	
+	static ArrayList<Item> processedItems = new ArrayList<Item>();              // ArrayList of processed item data
+	static ArrayList<Bid> processedBids = new ArrayList<Bid>();                 // ArrayList of the processed bid data
+	static HashMap<String, User> processedUsers = new HashMap<String, User>();  // HashMap of the processed user data
     
 	static final int MAX_DESCRIPTION_LENGTH = 4000;
     static final String columnSeparator = "|*|";
@@ -211,12 +206,9 @@ class MyParser {
         /**************************************************************/        
     }
     
-    static void processItems(Element[] items) {    	
-        // TODO: remove data in the current file?
-
+    static void processItems(Element[] items) {    	 
     	// Process each item individually
-    	for (int i = 0; i < items.length; i++) {
-    		Element itemData = items[i];
+    	for (Element itemData: items) {    		
     		Item newItem = new Item(itemData);
     		
     		// Add the item to the processed items list
@@ -438,8 +430,17 @@ class MyParser {
     		
     		this.itemId = itemData.getAttribute("ItemID");
     		this.name = escapeQuotes(getElementTextByTagNameNR(itemData, "Name"));
-    		this.currently = convertToDigitFormat(getElementTextByTagNameNR(itemData, "Currently"));    
-    		this.buyPrice = convertToDigitFormat(getElementTextByTagNameNR(itemData, "Buy_Price"));
+    		this.currently = convertToDigitFormat(getElementTextByTagNameNR(itemData, "Currently"));
+    		
+    		// Buy price is optional so set to null if doesn't exist
+    		String buyPriceData = getElementTextByTagNameNR(itemData, "Buy_Price");
+    		if (buyPriceData == "") {
+    			this.buyPrice = "\\N";
+    		}
+    		else {
+    			this.buyPrice = convertToDigitFormat(buyPriceData);
+    		}
+    		        	
     		this.firstBid = convertToDigitFormat(getElementTextByTagNameNR(itemData, "First_Bid"));
     		this.numBids = getElementTextByTagNameNR(itemData, "Number_of_Bids");    		    		    		    		
             this.country = escapeQuotes(getElementTextByTagNameNR(itemData, "Country"));
