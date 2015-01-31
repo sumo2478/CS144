@@ -239,7 +239,7 @@ class MyParser {
     	writeBidsToFile(processedBids, "Bid.dat");
     	
     	// Write categories to file
-    	writeCategoriesToFile(processedItems, "Category.dat");
+    	writeCategoriesToFile(processedItems, "Category.dat.tmp");
     }
     
     static void writeItemsToFile(ArrayList<Item> items, String filename) {
