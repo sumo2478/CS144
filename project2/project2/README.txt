@@ -20,12 +20,14 @@ Item(ItemId,
 User(UserId, 
      Rating, 
      Location, 
+     Latitude,
+     Longitude,
      Country,
      PRIMARY KEY(UserId))   
 
 Category(CategoryName, 
          ItemId,
-         PRIMARY KEY (Name, ItemId)
+         PRIMARY KEY (CategoryName, ItemId)
          )
 
 Bid(UserId, // User ID of the buyer
@@ -38,7 +40,7 @@ Bid(UserId, // User ID of the buyer
 2. 
 
 ItemId -> Name, Currently, Buy_Price, First_Bid, Number_of_bids, Description, Seller, Location, Latitude, Longitude, Country, Started, Ends
-UserId -> Rating, Location, Country
+UserId -> Rating, Location, Latitude, Longitude, Country
 UserId, ItemId, Time -> Amount
 
 3. All relations are in BCNF
