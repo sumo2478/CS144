@@ -36,6 +36,15 @@
         </java>
     </target>
 
+    <target name="test" depends="compile">
+        <java classname="edu.ucla.cs.cs144.AuctionSearchTest" failonerror="true" fork="yes">
+            <classpath refid="classpath"/>
+            <assertions>
+                <enable/>
+            </assertions>
+        </java>
+    </target>
+
     <target name="build" depends="clean">
         <echo message="${ant.project.name}: AuctionSearchService.aar"/>
 

@@ -34,6 +34,7 @@ public class Indexer {
         if (indexWriter == null) {
             Directory indexDir = FSDirectory.open(new File("/var/lib/lucene/index1/"));
             IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_2, new StandardAnalyzer());
+            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
             indexWriter = new IndexWriter(indexDir, config);
         }
         return indexWriter;
@@ -83,7 +84,7 @@ public class Indexer {
     	ResultSet itemSet = retrieveItemsFromDatabase(conn);
     	
         // Index all items
-        indexItems(itemSet);
+        indexItems(conn, itemSet);
         
     }catch (SQLException ex) {
     	System.out.println(ex);
@@ -101,9 +102,14 @@ public class Indexer {
 	}
     }    
 
-    public ResultSet retrieveItemsFromDatabase(Connection conn) throws SQLException{
+    public ResultSet retrieveItemsFromDatabase(Connection conn) throws SQLException {
         String queryString = "SELECT ItemId, Name, Description FROM Item";
         return executeDatabaseQuery(conn, queryString);
+    }
+    
+    public ResultSet retrieveCategoryForItemFromDatabase(Connection conn, String ItemId) throws SQLException {
+    	String queryString = "SELECT GROUP_CONCAT(CategoryName SEPARATOR ' ') as Categories FROM Category WHERE ItemId = " + ItemId;
+    	return executeDatabaseQuery(conn, queryString);
     }
 
     public ResultSet executeDatabaseQuery(Connection conn, String queryString) throws SQLException {
@@ -112,15 +118,22 @@ public class Indexer {
         return stmt.executeQuery(queryString);
     }
 
-    public void indexItems(ResultSet itemSet) throws IOException, SQLException {
-        // TODO: Index Category
+    public void indexItems(Connection conn, ResultSet itemSet) throws IOException, SQLException {
         IndexWriter writer = getIndexWriter(false);
 
         while (itemSet.next()) {
             String itemId = itemSet.getString("ItemId");
             String itemName = itemSet.getString("Name");
             String itemDescription = itemSet.getString("Description");
-            String fullSearchableText = itemName + " " + itemDescription;
+            String itemCategory = "";
+            
+            // Retrieve Categories
+            ResultSet categorySet = retrieveCategoryForItemFromDatabase(conn, itemId);
+            if (categorySet.next()) {
+            	itemCategory = categorySet.getString("Categories");
+            }
+            
+            String fullSearchableText = itemName + " " + itemDescription + " " + itemCategory;
 
             Document doc = new Document();
             doc.add(new StringField("ItemId", itemId, Field.Store.YES));
