@@ -23,12 +23,29 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
 public class Indexer {
+
+    private IndexWriter indexWriter = null;
     
     /** Creates a new instance of Indexer */
-    public Indexer() {
+    public Indexer() {    	
     }
- 
-    public void rebuildIndexes() {
+
+    public IndexWriter getIndexWriter(boolean create) throws IOException {
+        if (indexWriter == null) {
+            Directory indexDir = FSDirectory.open(new File("/var/lib/lucene/index1/"));
+            IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_4_10_2, new StandardAnalyzer());
+            indexWriter = new IndexWriter(indexDir, config);
+        }
+        return indexWriter;
+    }
+
+    public void closeIndexWriter() throws IOException {
+        if (indexWriter != null) {
+            indexWriter.close();
+        }
+    }
+
+    public void rebuildIndexes() throws IOException {
 
         Connection conn = null;
 
@@ -58,8 +75,24 @@ public class Indexer {
          * and place your class source files at src/edu/ucla/cs/cs144/.
 	 * 
 	 */
+    // Open the index writer
+    getIndexWriter(true);
 
+    try {
+        // Retrieve all items
+    	ResultSet itemSet = retrieveItemsFromDatabase(conn);
+    	
+        // Index all items
+        indexItems(itemSet);
+        
+    }catch (SQLException ex) {
+    	System.out.println(ex);
+    	System.exit(3);
+    }    
 
+    // Close the index writer
+    closeIndexWriter();
+    
         // close the database connection
 	try {
 	    conn.close();
@@ -68,8 +101,43 @@ public class Indexer {
 	}
     }    
 
+    public ResultSet retrieveItemsFromDatabase(Connection conn) throws SQLException{
+        String queryString = "SELECT ItemId, Name, Description FROM Item";
+        return executeDatabaseQuery(conn, queryString);
+    }
+
+    public ResultSet executeDatabaseQuery(Connection conn, String queryString) throws SQLException {
+        Statement stmt = conn.createStatement();
+
+        return stmt.executeQuery(queryString);
+    }
+
+    public void indexItems(ResultSet itemSet) throws IOException, SQLException {
+        // TODO: Index Category
+        IndexWriter writer = getIndexWriter(false);
+
+        while (itemSet.next()) {
+            String itemId = itemSet.getString("ItemId");
+            String itemName = itemSet.getString("Name");
+            String itemDescription = itemSet.getString("Description");
+            String fullSearchableText = itemName + " " + itemDescription;
+
+            Document doc = new Document();
+            doc.add(new StringField("ItemId", itemId, Field.Store.YES));
+            doc.add(new StringField("Name", itemName, Field.Store.YES));
+            doc.add(new TextField("content", fullSearchableText, Field.Store.NO));
+
+            writer.addDocument(doc);
+        }
+    }
+
     public static void main(String args[]) {
-        Indexer idx = new Indexer();
-        idx.rebuildIndexes();
+    	try {
+    		Indexer idx = new Indexer();
+            idx.rebuildIndexes();	
+    	}
+    	catch (IOException ex) {
+    		System.out.println(ex);
+    	}        
     }   
 }
