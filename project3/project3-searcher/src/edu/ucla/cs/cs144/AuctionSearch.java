@@ -4,15 +4,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.File;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.List;
 import java.text.SimpleDateFormat;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.PreparedStatement;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.analysis.Analyzer;
@@ -68,16 +69,10 @@ public class AuctionSearch implements IAuctionSearch {
 	public SearchResult[] basicSearch(String query, int numResultsToSkip, 
 			int numResultsToReturn) {
 		ArrayList<SearchResult> searchResults = new ArrayList<SearchResult>();
-		SearchResult[] results = null;
-		
-		// The number of results we query for should be the offset + the number of results we want to obtain
-		int numResultsToObtain = numResultsToReturn + numResultsToSkip;
+		SearchResult[] results = null;		
 		
 		try {
-			// Initialize index searcher and query parser		
-			Query queryObject = parser.parse(query);			
-			TopDocs topDocs = searcher.search(queryObject, numResultsToObtain);
-			ScoreDoc[] hits = topDocs.scoreDocs;
+			ScoreDoc[] hits = queryIndexForItems(query, numResultsToSkip, numResultsToReturn);
 			
 			for (int i = 0; i < hits.length; i++) {
 				if (i < numResultsToSkip) {
@@ -96,7 +91,7 @@ public class AuctionSearch implements IAuctionSearch {
 			results = new SearchResult[searchResults.size()];
 			results = searchResults.toArray(results);					
 		}
-		catch (IOException | ParseException e) {
+		catch (IOException e) {
 			System.out.println("Failed to perform basic search");
 			System.out.println(e);
 			System.exit(3);
@@ -107,8 +102,52 @@ public class AuctionSearch implements IAuctionSearch {
 
 	public SearchResult[] spatialSearch(String query, SearchRegion region,
 			int numResultsToSkip, int numResultsToReturn) {
-		// TODO: Your code here!
-		return new SearchResult[0];
+		ArrayList<SearchResult> searchResults = new ArrayList<SearchResult>();
+		SearchResult[] results = null;
+		
+		// We set the number of results to return to 99999999 in order to query all matches with the given keyword
+		ScoreDoc[] hitsFromKeywordMatch = queryIndexForItems(query, 0, 99999999);
+		HashSet<String> itemIdsInRegion = queryItemInRegion(region);		
+		
+		// Need to add the two to find the total number of results we should go through
+		int maxNumberOfItemsToLookThrough = numResultsToSkip + numResultsToReturn;
+		
+		try {
+			for (int i = 0; i < hitsFromKeywordMatch.length; i++) {				
+				ScoreDoc hit = hitsFromKeywordMatch[i];
+				Document doc = searcher.doc(hit.doc);
+				String itemId = doc.get("ItemId");
+				String name = doc.get("Name");
+				
+				if (itemIdsInRegion.contains(itemId)) {
+					SearchResult currentSearchResult = new SearchResult(itemId, name);
+					searchResults.add(currentSearchResult);
+				}		
+			}	
+		}
+		catch (IOException e) {
+			System.out.println("Failed to complete spatial search");
+			System.out.println(e);
+			System.exit(3);
+		}
+		
+		ArrayList<SearchResult> offsettedResults = new ArrayList<SearchResult>();
+		for (int i = 0; i < searchResults.size(); i++) {
+			if (i < numResultsToSkip) {
+				continue;
+			}
+			else if (i > maxNumberOfItemsToLookThrough) {				
+				break;
+			}
+			
+			offsettedResults.add(searchResults.get(i));
+		}
+		
+		
+		results = new SearchResult[offsettedResults.size()];
+		results = offsettedResults.toArray(results);
+		
+		return results;
 	}
 
 	public String getXMLDataForItemId(String itemId) {
@@ -118,6 +157,67 @@ public class AuctionSearch implements IAuctionSearch {
 	
 	public String echo(String message) {
 		return message;
+	}
+	
+	private HashSet<String> queryItemInRegion(SearchRegion region) {
+        // Create a connection to the database to retrieve Items from MySQL
+		HashSet<String> itemIdResultSet = null;
+        Connection conn = null;        
+
+		try {
+		    conn = DbManager.getConnection(true);				
+			
+			String point1 = region.getLx() + " " + region.getLy();
+			String point2 = region.getRx() + " " + region.getLy();
+			String point3 = region.getRx() + " " + region.getRy();
+			String point4 = region.getLx() + " " + region.getRy();
+			
+			String queryString = "SELECT ItemId FROM Location WHERE MBRContains(GeomFromText('Polygon((" + point1 + "," + point2 + "," + point3 + "," + point4 + "," + point1 + "))'), Coordinate)";
+			PreparedStatement preparedStatement = conn.prepareStatement(
+					queryString
+				);
+			
+			ResultSet results = preparedStatement.executeQuery();
+			itemIdResultSet = new HashSet<String>();
+			while (results.next()) {
+				itemIdResultSet.add(results.getString("ItemId"));
+			}			
+			
+			conn.close();
+		}
+		catch (SQLException ex) {
+		    System.out.println(ex);
+		}
+		
+		return itemIdResultSet;
+	}
+		
+	private ScoreDoc[] queryIndexForItems(String query, int numResultsToSkip, int numResultsToReturn) {
+		/**
+		 * Returns all items matching query with size of numResultsToSkip + numResultsToReturn
+		 * @param query - The query to execute
+		 * @param numResultsToSkip - The number of results to skip
+		 * @param numResultsToReturn - The number of results to return
+		 * @return ScoreDoc array containing all the entries that match with the query 
+		 */
+		ScoreDoc[] results = null;
+		
+		// The number of results we query for should be the offset + the number of results we want to obtain
+		int numResultsToObtain = numResultsToReturn + numResultsToSkip;
+		
+		try {
+			// Initialize index searcher and query parser		
+			Query queryObject = parser.parse(query);			
+			TopDocs topDocs = searcher.search(queryObject, numResultsToObtain);
+			results = topDocs.scoreDocs;			
+		}
+		catch (IOException | ParseException e) {
+			System.out.println("Failed to perform basic search");
+			System.out.println(e);
+			System.exit(3);
+		}
+				
+		return results;
 	}
 
 }

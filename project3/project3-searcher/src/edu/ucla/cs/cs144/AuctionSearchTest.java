@@ -67,6 +67,27 @@ public class AuctionSearchTest {
 		SearchResult[] basicResult5 = as.basicSearch(query5, 500, 800);
 		assert (basicResult5.length == 270): "If offset + number of elements to return is greater than total elements it should return the remaining number";
 		
+		SearchRegion region =
+	    new SearchRegion(33.774, -118.63, 34.201, -117.38); 
+		SearchResult[] spatialResults = as.spatialSearch("camera", region, 0, 20);		
+		assert (spatialResults.length == 17): "spatial search query failed got: " + spatialResults.length + " should be: 17";
+		/*System.out.println("Regular");
+		for (SearchResult result: spatialResults) {
+			System.out.println(result.getItemId() + ": " + result.getName());
+		}*/
+		
+		SearchRegion region2 =
+	    new SearchRegion(33.774, -118.63, 34.201, -117.38); 
+		SearchResult[] spatialResults2 = as.spatialSearch("camera", region2, 5, 12);		
+        assert (spatialResults2.length == 12): "spatial search query failed got: " + spatialResults2.length + " should be: 12";
+        /*System.out.println("Offsetted");
+        for (SearchResult result: spatialResults2) {
+        	System.out.println(result.getItemId() + ": " + result.getName());
+        }*/
+				
+		
+		//SELECT ItemId FROM Location WHERE MBRContains(GeomFromText('Polygon((33.774 -118.63, 34.201 -118.63, 34.201 -117.38, 33.774 -117.38,33.774 -118.63))'), Coordinate);
+		
 		System.out.println("Tests completed successfully!");
 	}
 }

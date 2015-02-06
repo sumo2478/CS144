@@ -104,18 +104,27 @@ public class Indexer {
 
     public ResultSet retrieveItemsFromDatabase(Connection conn) throws SQLException {
         String queryString = "SELECT ItemId, Name, Description FROM Item";
-        return executeDatabaseQuery(conn, queryString);
+        PreparedStatement preparedStatement = conn.prepareStatement(queryString);
+        return preparedStatement.executeQuery();
     }
     
-    public ResultSet retrieveCategoryForItemFromDatabase(Connection conn, String ItemId) throws SQLException {
-    	String queryString = "SELECT GROUP_CONCAT(CategoryName SEPARATOR ' ') as Categories FROM Category WHERE ItemId = " + ItemId;
-    	return executeDatabaseQuery(conn, queryString);
+    public ResultSet retrieveCategoryForItemFromDatabase(Connection conn, String ItemId) throws SQLException {    	
+    	PreparedStatement preparedStatement = conn.prepareStatement(
+    		"SELECT GROUP_CONCAT(CategoryName SEPARATOR ' ') as Categories FROM Category WHERE ItemId = ?"
+    	);
+    	
+    	preparedStatement.setString(1, ItemId);    	
+    	return preparedStatement.executeQuery();
     }
 
     public ResultSet executeDatabaseQuery(Connection conn, String queryString) throws SQLException {
-        Statement stmt = conn.createStatement();
-
-        return stmt.executeQuery(queryString);
+    	
+    	PreparedStatement preparedStatement = conn.prepareStatement
+    			(
+    			    queryString
+    			);
+    	
+    	return preparedStatement.executeQuery();
     }
 
     public void indexItems(Connection conn, ResultSet itemSet) throws IOException, SQLException {
