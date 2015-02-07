@@ -151,21 +151,190 @@ public class AuctionSearch implements IAuctionSearch {
 	}
 
 	public String getXMLDataForItemId(String itemId) {
-		// TODO: Your code here!
-		return "";
+		String xmlFormattedItem = "";
+		
+		try {
+			Connection conn = DbManager.getConnection(true);
+			
+			// Retrieve the item data
+			PreparedStatement queryForItemData = conn.prepareStatement(
+					"SELECT * FROM Item WHERE ItemId = ?"
+			);					
+			queryForItemData.setString(1, itemId);
+			ResultSet itemData = queryForItemData.executeQuery();
+			
+			// If item does not exist then just return the empty string
+			if (!itemData.next()) {
+				return xmlFormattedItem;
+			}
+			
+			// Set the initial Item tag
+			xmlFormattedItem = "<Item ItemId=\"" + itemId + "\">\n";
+			
+			// Set the item name tag
+			String itemName = xmlFormatString(itemData.getString("Name"));
+			xmlFormattedItem = xmlFormattedItem + "\t<Name>" + itemName + "</Name>\n"; 
+			
+			// Set the category data
+			xmlFormattedItem = xmlFormattedItem + categoryXMLString(conn, itemId);					
+			
+			// Set the currently number
+			String currently = formatToCurrency(itemData.getFloat("Currently"));
+			xmlFormattedItem = xmlFormattedItem + "\t<Currently>" + currently + "</Currently>\n";			
+			
+			// Set the first bid
+			String firstBid = formatToCurrency(itemData.getFloat("First_Bid"));			
+			xmlFormattedItem = xmlFormattedItem + "\t<First_Bid>" + firstBid + "</First_Bid>\n";			
+			
+			// Set the number of bids
+			String numberOfBids = Integer.toString(itemData.getInt("Number_Of_Bids"));
+			xmlFormattedItem = xmlFormattedItem + "\t<Number_of_Bids>" + numberOfBids + "</Number_of_Bids>\n";
+			
+			// Set the bid data
+			xmlFormattedItem = xmlFormattedItem + bidXMLString(conn, itemId);
+			xmlFormattedItem = xmlFormattedItem + "\t</Bids>\n";
+			
+			// Set the Location data
+			String location = xmlFormatString(itemData.getString("Location"));
+			String latitude = itemData.getString("Latitude");
+			String longitude = itemData.getString("Longitude");
+			xmlFormattedItem = xmlFormattedItem + "\t<Location Latitude=\"" + latitude + "\" Longitude=\"" + longitude + "\">" + location + "</Location>\n";
+			
+			// Set the country data
+			String country = xmlFormatString(itemData.getString("Country"));
+			xmlFormattedItem = xmlFormattedItem + "\t<Country>" + country + "</Country>\n";
+			
+			// Set the started data
+			String started = formatTimeString(itemData.getTimestamp("Started").toString());
+			xmlFormattedItem = xmlFormattedItem + "\t<Started>" + started + "</Started>\n";
+			
+			// Set the ended data
+			String ends = formatTimeString(itemData.getTimestamp("Ends").toString());
+			xmlFormattedItem = xmlFormattedItem + "\t<Ends>" + ends + "</Ends>\n";
+			
+			// Set the seller data
+			String sellerId = itemData.getString("Seller");
+			ResultSet sellerData = getDataForUser(conn, sellerId);
+			if (sellerData.next()) {
+				String rating = sellerData.getString("Rating");
+				String formattedUserId = xmlFormatString(sellerId);
+				
+				xmlFormattedItem = xmlFormattedItem + "\t<Seller Rating=\"" + rating + "\" UserId=\"" + sellerId + "\" />\n";
+			}
+			
+			// Set the description data
+			String description = xmlFormatString(itemData.getString("Description"));
+			xmlFormattedItem = xmlFormattedItem + "\t<Description>" + description + "</Description>\n";
+			
+			xmlFormattedItem = xmlFormattedItem + "</Item>";
+			
+			conn.close();
+		}
+		catch (SQLException ex) {
+			System.out.println(ex);
+		}
+		
+		return xmlFormattedItem;
 	}
 	
 	public String echo(String message) {
 		return message;
 	}
 	
+	private String formatToCurrency(float amount) {
+		return String.format("$%.2f", amount);
+	}
+	
+	private String bidXMLString(Connection conn, String itemId) throws SQLException {
+		String bidString = "";
+		
+		PreparedStatement queryForBidData = conn.prepareStatement(
+				"SELECT * FROM Bid WHERE ItemId = ?"
+		);
+		queryForBidData.setString(1, itemId);
+		ResultSet bidData = queryForBidData.executeQuery();
+		
+		while (bidData.next()) {
+			// If the bid string is empty then add in the initial <Bids> tag
+			if (bidString.equals("")) {
+				bidString = "\t<Bids>\n";
+			}
+			
+			bidString = bidString + "\t\t<Bid>\n";
+			
+			// Add in the bidder information			
+			String bidderId = bidData.getString("UserId");
+			ResultSet bidderData = getDataForUser(conn, bidderId);
+			if (bidderData.next()) {
+				String rating = bidderData.getString("Rating");
+				String formattedBidderId = xmlFormatString(bidderId);				
+				bidString = bidString + "\t\t\t<Bidder Rating=\"" + rating + "\" UserID=\"" + formattedBidderId + "\">\n";
+				
+				String location = xmlFormatString(bidderData.getString("Location"));
+				bidString = bidString + "\t\t\t\t<Location>" + location + "</Location>\n";
+				
+				String country = xmlFormatString(bidderData.getString("Country"));
+				bidString = bidString + "\t\t\t\t<Country>" + country + "</Country>\n";
+				
+				bidString = bidString + "\t\t\t</Bidder>\n";				
+			}			
+			
+			// Add in the time information
+			String time = formatTimeString(bidData.getTimestamp("Time").toString());
+			bidString = bidString + "\t\t\t<Time>" + time + "</Time>\n";
+			
+			// Add in the amount information
+			String amount = formatToCurrency(bidData.getFloat("Amount"));
+			bidString = bidString + "\t\t\t<Amount>" + amount + "</Amount>\n";
+			
+			bidString = bidString + "\t\t</Bid>\n";
+			
+		}
+		
+		return bidString;
+	}
+	
+	private String formatTimeString(String timeToFormat) {
+		// TODO: Implement formatting the time
+		return timeToFormat;
+	}
+	
+	private ResultSet getDataForUser(Connection conn, String userId) throws SQLException {
+		PreparedStatement queryForUserData = conn.prepareStatement(
+				"SELECT * FROM User WHERE UserId = ?"
+		);		
+		queryForUserData.setString(1, userId);
+		return queryForUserData.executeQuery();
+	}
+	
+	private String categoryXMLString(Connection conn, String itemId) throws SQLException {
+		String categoryString = "";
+		
+		PreparedStatement queryForCategoryData = conn.prepareStatement(
+				"SELECT * FROM Category WHERE ItemId = ?"
+		);
+		queryForCategoryData.setString(1, itemId);
+		ResultSet categoryData = queryForCategoryData.executeQuery();
+		
+		while (categoryData.next()) {
+			String categoryName = xmlFormatString(categoryData.getString("CategoryName"));
+			categoryString = categoryString + "\t<Category>" + categoryName + "</Category>\n";
+		}
+		
+		return categoryString;
+	}
+	
+	private String xmlFormatString(String stringToFormat) {
+		// TODO: Implement later
+		return stringToFormat;
+	}
+	
 	private HashSet<String> queryItemInRegion(SearchRegion region) {
         // Create a connection to the database to retrieve Items from MySQL
-		HashSet<String> itemIdResultSet = null;
-        Connection conn = null;        
+		HashSet<String> itemIdResultSet = null;                
 
 		try {
-		    conn = DbManager.getConnection(true);				
+			Connection conn = DbManager.getConnection(true);				
 			
 			String point1 = region.getLx() + " " + region.getLy();
 			String point2 = region.getRx() + " " + region.getLy();
