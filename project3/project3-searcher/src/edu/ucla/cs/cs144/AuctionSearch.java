@@ -192,13 +192,18 @@ public class AuctionSearch implements IAuctionSearch {
 			
 			// Set the bid data
 			xmlFormattedItem = xmlFormattedItem + bidXMLString(conn, itemId);
-			xmlFormattedItem = xmlFormattedItem + "\t</Bids>\n";
+			xmlFormattedItem = xmlFormattedItem + "\t<Bids />\n";
 			
 			// Set the Location data
 			String location = xmlFormatString(itemData.getString("Location"));
 			String latitude = itemData.getString("Latitude");
 			String longitude = itemData.getString("Longitude");
-			xmlFormattedItem = xmlFormattedItem + "\t<Location Latitude=\"" + latitude + "\" Longitude=\"" + longitude + "\">" + location + "</Location>\n";
+			if (!latitude.equals("") && !longitude.equals("")) {
+				xmlFormattedItem = xmlFormattedItem + "\t<Location Latitude=\"" + latitude + "\" Longitude=\"" + longitude + "\">" + location + "</Location>\n";
+			}
+			else {
+				xmlFormattedItem = xmlFormattedItem + "\t<Location>" + location + "</Location>\n";
+			}
 			
 			// Set the country data
 			String country = xmlFormatString(itemData.getString("Country"));
@@ -267,16 +272,19 @@ public class AuctionSearch implements IAuctionSearch {
 			ResultSet bidderData = getDataForUser(conn, bidderId);
 			if (bidderData.next()) {
 				String rating = bidderData.getString("Rating");
-				String formattedBidderId = xmlFormatString(bidderId);				
-				bidString = bidString + "\t\t\t<Bidder Rating=\"" + rating + "\" UserID=\"" + formattedBidderId + "\">\n";
-				
+				String formattedBidderId = xmlFormatString(bidderId);
 				String location = xmlFormatString(bidderData.getString("Location"));
-				bidString = bidString + "\t\t\t\t<Location>" + location + "</Location>\n";
-				
 				String country = xmlFormatString(bidderData.getString("Country"));
-				bidString = bidString + "\t\t\t\t<Country>" + country + "</Country>\n";
 				
-				bidString = bidString + "\t\t\t</Bidder>\n";				
+				if (location.equals("") && country.equals("")) {
+					bidString = bidString + "\t\t\t<Bidder Rating=\"" + rating + "\" UserID=\"" + formattedBidderId + "\" />\n";
+				}
+				else {
+					bidString = bidString + "\t\t\t<Bidder Rating=\"" + rating + "\" UserID=\"" + formattedBidderId + "\">\n";
+					bidString = bidString + "\t\t\t\t<Location>" + location + "</Location>\n";
+					bidString = bidString + "\t\t\t\t<Country>" + country + "</Country>\n";
+					bidString = bidString + "\t\t\t</Bidder>\n";
+				}										
 			}			
 			
 			// Add in the time information
@@ -295,8 +303,22 @@ public class AuctionSearch implements IAuctionSearch {
 	}
 	
 	private String formatTimeString(String timeToFormat) {
-		// TODO: Implement formatting the time
-		return timeToFormat;
+    	String newDate = "";
+    	
+    	try { 
+			SimpleDateFormat newFormat = new SimpleDateFormat("MMM-dd-yy HH:mm:ss");
+			SimpleDateFormat originalFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		   
+			Date parsedDate = originalFormat.parse(timeToFormat);
+			newDate = newFormat.format(parsedDate);
+    	}
+    	catch (Exception e) {
+            System.out.println("Error parsing date");
+            e.printStackTrace();
+            System.exit(3);
+    	}
+    	
+    	return newDate;
 	}
 	
 	private ResultSet getDataForUser(Connection conn, String userId) throws SQLException {
@@ -325,7 +347,11 @@ public class AuctionSearch implements IAuctionSearch {
 	}
 	
 	private String xmlFormatString(String stringToFormat) {
-		// TODO: Implement later
+		// TODO: Check if this is correct
+		stringToFormat = stringToFormat.replaceAll("<", "&lt;");		
+		stringToFormat = stringToFormat.replaceAll(">", "&gt;");
+		stringToFormat = stringToFormat.replaceAll("&", "&amp;");
+		
 		return stringToFormat;
 	}
 	
