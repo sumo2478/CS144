@@ -40,7 +40,7 @@ public class AuctionSearchTest {
 			System.out.println(result.getItemId() + ": " + result.getName());
 		}
 		*/
-		String itemId = "1045700537";
+		String itemId = "1043495702";
 		String item = as.getXMLDataForItemId(itemId);
 		System.out.println("XML data for ItemId: " + itemId);
 		System.out.println(item);
@@ -71,19 +71,14 @@ public class AuctionSearchTest {
 	    new SearchRegion(33.774, -118.63, 34.201, -117.38); 
 		SearchResult[] spatialResults = as.spatialSearch("camera", region, 0, 20);		
 		assert (spatialResults.length == 17): "spatial search query failed got: " + spatialResults.length + " should be: 17";
-		/*System.out.println("Regular");
-		for (SearchResult result: spatialResults) {
-			System.out.println(result.getItemId() + ": " + result.getName());
-		}*/
 		
 		SearchRegion region2 =
 	    new SearchRegion(33.774, -118.63, 34.201, -117.38); 
 		SearchResult[] spatialResults2 = as.spatialSearch("camera", region2, 5, 12);		
         assert (spatialResults2.length == 12): "spatial search query failed got: " + spatialResults2.length + " should be: 12";
-        /*System.out.println("Offsetted");
-        for (SearchResult result: spatialResults2) {
-        	System.out.println(result.getItemId() + ": " + result.getName());
-        }*/
+        
+        SearchResult[] spatialResult3 = as.spatialSearch("superman", region2, 0, 200);
+        assert (spatialResult3.length == 7): "spatial search query failed for superman got: " + spatialResult3.length + " should be: 7";
 				
 		
 		//SELECT ItemId FROM Location WHERE MBRContains(GeomFromText('Polygon((33.774 -118.63, 34.201 -118.63, 34.201 -117.38, 33.774 -117.38,33.774 -118.63))'), Coordinate);

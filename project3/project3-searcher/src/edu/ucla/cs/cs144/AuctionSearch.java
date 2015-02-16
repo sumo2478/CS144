@@ -169,7 +169,7 @@ public class AuctionSearch implements IAuctionSearch {
 			}
 			
 			// Set the initial Item tag
-			xmlFormattedItem = "<Item ItemId=\"" + itemId + "\">\n";
+			xmlFormattedItem = "<Item ItemID=\"" + itemId + "\">\n";
 			
 			// Set the item name tag
 			String itemName = xmlFormatString(itemData.getString("Name"));
@@ -347,7 +347,6 @@ public class AuctionSearch implements IAuctionSearch {
 	}
 	
 	private String xmlFormatString(String stringToFormat) {
-		// TODO: Check if this is correct
 		stringToFormat = stringToFormat.replaceAll("<", "&lt;");		
 		stringToFormat = stringToFormat.replaceAll(">", "&gt;");
 		stringToFormat = stringToFormat.replaceAll("&", "&amp;");
