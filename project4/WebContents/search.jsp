@@ -6,7 +6,14 @@
 	<title>Search Results</title>
 </head>
 <body>
-	<h1>Search Results: </h1>
+	<h2>Keyword Search</h2>
+	<form>
+		Name: <input type="text" name="q">
+		<input type="hidden" name="numResultsToSkip" value="0">		
+		<input type="submit" value="Search">
+	</form>
+
+	<h2>Search Results: </h2>
 	<%
 		SearchResult[] results = (SearchResult[])request.getAttribute("results");
 		for (SearchResult item : results) {
