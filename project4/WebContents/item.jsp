@@ -9,6 +9,13 @@
 	<title>Item Results</title>
 </head>
 <body>
+	<h2>Search For Item:</h2>
+	<form action="/eBay/item">
+		ID: <input type="text" name="id">
+		<input type="submit" value="Search">
+	</form>
+
+	<h2>Item Result:</h2>
 	<h3>ID: <%= request.getAttribute("itemId") %></h3>
 	<h3>Name: <%= request.getAttribute("name") %></h3>
 	<p>Currently: <%= request.getAttribute("currently") %></p>
