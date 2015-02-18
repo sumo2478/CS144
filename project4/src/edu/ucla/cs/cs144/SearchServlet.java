@@ -18,13 +18,31 @@ public class SearchServlet extends HttpServlet implements Servlet {
     {
         String searchQuery = request.getParameter("q");
         int numResultsToSkip = Integer.parseInt(request.getParameter("numResultsToSkip"));
-        // int numResultsToReturn = Integer.parseInt(request.getParameter("numResultsToReturn"));
         int numResultsToReturn = 20;
 
         AuctionSearchClient searchClient = new AuctionSearchClient();
         SearchResult[] results = searchClient.basicSearch(searchQuery, numResultsToSkip, numResultsToReturn);
         request.setAttribute("results", results);
         request.setAttribute("title", "hello");
-        request.getRequestDispatcher("/search.jsp").forward(request, response);;
+        request.setAttribute("query", searchQuery);
+
+        // Set the results to skip               
+		String prevResultsToSkipString = "";
+		int prevResultsToSkip = numResultsToSkip - numResultsToReturn;
+		if (prevResultsToSkip >= 0) {
+			prevResultsToSkipString += prevResultsToSkip;
+		}		
+
+		String nextResultsToSkipString = "";
+		int nextResultsToSkip = numResultsToSkip + numResultsToReturn;
+		if (results.length >= numResultsToReturn) {
+			nextResultsToSkipString += nextResultsToSkip;			
+		}		
+		        
+        request.setAttribute("prevResultsToSkip", prevResultsToSkipString);
+        request.setAttribute("nextResultsToSkip", nextResultsToSkipString);        
+        
+
+        request.getRequestDispatcher("/search.jsp").forward(request, response);
     }    
 }
