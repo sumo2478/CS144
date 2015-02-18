@@ -11,7 +11,7 @@
 		SearchResult[] results = (SearchResult[])request.getAttribute("results");
 		for (SearchResult item : results) {
 		%>
-			<p>ID: <%= item.getItemId() %> Name: <%= item.getName() %></p>
+			<a href="/eBay/item?id=<%= item.getItemId()%>">ID: <%= item.getItemId() %> Name: <%= item.getName() %></a><br>
 	    <%
 		}
 	%>
