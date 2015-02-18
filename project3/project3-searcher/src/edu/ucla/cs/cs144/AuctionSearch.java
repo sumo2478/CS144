@@ -192,7 +192,12 @@ public class AuctionSearch implements IAuctionSearch {
 			
 			// Set the bid data
 			xmlFormattedItem = xmlFormattedItem + bidXMLString(conn, itemId);
-			xmlFormattedItem = xmlFormattedItem + "\t<Bids />\n";
+			if (itemData.getInt("Number_Of_Bids") <= 0) {
+				xmlFormattedItem = xmlFormattedItem + "\t<Bids />\n";
+			}
+			else {
+				xmlFormattedItem = xmlFormattedItem + "\t</Bids>\n";
+			}			
 			
 			// Set the Location data
 			String location = xmlFormatString(itemData.getString("Location"));
@@ -224,7 +229,7 @@ public class AuctionSearch implements IAuctionSearch {
 				String rating = sellerData.getString("Rating");
 				String formattedUserId = xmlFormatString(sellerId);
 				
-				xmlFormattedItem = xmlFormattedItem + "\t<Seller Rating=\"" + rating + "\" UserId=\"" + sellerId + "\" />\n";
+				xmlFormattedItem = xmlFormattedItem + "\t<Seller Rating=\"" + rating + "\" UserID=\"" + sellerId + "\" />\n";
 			}
 			
 			// Set the description data
@@ -279,7 +284,7 @@ public class AuctionSearch implements IAuctionSearch {
 				if (location.equals("") && country.equals("")) {
 					bidString = bidString + "\t\t\t<Bidder Rating=\"" + rating + "\" UserID=\"" + formattedBidderId + "\" />\n";
 				}
-				else {
+				else {	
 					bidString = bidString + "\t\t\t<Bidder Rating=\"" + rating + "\" UserID=\"" + formattedBidderId + "\">\n";
 					bidString = bidString + "\t\t\t\t<Location>" + location + "</Location>\n";
 					bidString = bidString + "\t\t\t\t<Country>" + country + "</Country>\n";
