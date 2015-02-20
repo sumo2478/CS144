@@ -60,6 +60,12 @@ public class ItemServlet extends HttpServlet implements Servlet {
     	// Retrieve the document for the item given the id
 		String itemId = request.getParameter("id");
 		Document doc = getDocumentForId(itemId);
+		if (doc == null) {
+			request.setAttribute("error", "No item exists for that id");
+			request.getRequestDispatcher("/item.jsp").forward(request, response);
+			return;
+		}
+
 		Element itemData = doc.getDocumentElement();
 
 		// Set the item ID of the response
@@ -165,7 +171,9 @@ public class ItemServlet extends HttpServlet implements Servlet {
         Document doc = null;
 
         try {
-            doc = builder.parse(new InputSource(new StringReader(xmlData)));                        
+        	if (!xmlData.equals("")) {
+        		doc = builder.parse(new InputSource(new StringReader(xmlData)));                                   
+        	}            
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -175,7 +183,7 @@ public class ItemServlet extends HttpServlet implements Servlet {
             System.out.println("  (not supposed to happen with supplied XML files)");
             e.printStackTrace();
             System.exit(3);
-        } 
+        }         
 
         return doc;   	
     }

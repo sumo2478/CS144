@@ -14,8 +14,9 @@
 	</form>
 
 	<h2>Search Results: </h2>
-	<%
+	<%	
 		SearchResult[] results = (SearchResult[])request.getAttribute("results");
+		%><h1>Results: <%= results.length %></h1><%
 		for (SearchResult item : results) {
 		%>
 			<a href="/eBay/item?id=<%= item.getItemId()%>">ID: <%= item.getItemId() %> Name: <%= item.getName() %></a><br>
