@@ -15,8 +15,7 @@ public class SearchServlet extends HttpServlet implements Servlet {
     public SearchServlet() {}
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-    {
-        // TODO: Check corner case when we have 20 results, but still show next button
+    {        
         String searchQuery = request.getParameter("q");
         int numResultsToSkip = Integer.parseInt(request.getParameter("numResultsToSkip"));
         int numResultsToReturn = 20;

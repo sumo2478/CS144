@@ -8,6 +8,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ErrorHandler;
 
+import java.io.*;
+import java.text.*;
+import java.util.*;
+
 public class Bid {
 	public String bidderUserId;
 	public String bidderRating;
@@ -15,10 +19,12 @@ public class Bid {
 	public String country;
 	public String time;
 	public String amount;
+    public Date dateObject;
 
-    public Bid(Element bidData) {	
-    	this.time = getElementTextByTagNameNR(bidData, "Time");
+    public Bid(Element bidData) {	    	   
     	this.amount = getElementTextByTagNameNR(bidData, "Amount");
+        this.time = getElementTextByTagNameNR(bidData, "Time");
+        setDateObjectOfBid(this.time);
 
     	// Get the user information from the bidder
     	Element bidderData = getElementByTagNameNR(bidData, "Bidder");
@@ -32,6 +38,18 @@ public class Bid {
 	}
 
 	// Helper Parsing Functions
+
+    private void setDateObjectOfBid(String dateToFormat) {
+        try {
+            SimpleDateFormat originalFormat = new SimpleDateFormat("MMM-dd-yy HH:mm:ss");
+            this.dateObject = originalFormat.parse(dateToFormat);
+        }
+        catch (ParseException e) {
+            System.out.println("Error parsing date");
+            e.printStackTrace();
+            System.exit(3);
+        }
+    }
 
 	/* Returns the first subelement of e matching the given tagName, or
     * null if one does not exist. NR means Non-Recursive.
