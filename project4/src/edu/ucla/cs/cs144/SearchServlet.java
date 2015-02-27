@@ -23,9 +23,10 @@ public class SearchServlet extends HttpServlet implements Servlet {
 
         AuctionSearchClient searchClient = new AuctionSearchClient();
         SearchResult[] results = searchClient.basicSearch(searchQuery, numResultsToSkip, numResultsToReturn);
-        request.setAttribute("results", results);
-        request.setAttribute("title", "hello");
+        request.setAttribute("results", results);        
         request.setAttribute("query", searchQuery);
+
+        SearchResult[] nextResults = searchClient.basicSearch(searchQuery, numResultsToSkip + numResultsToReturn, numResultsToReturn);            
 
         // Set the results to skip               
 		String prevResultsToSkipString = "";
@@ -36,7 +37,7 @@ public class SearchServlet extends HttpServlet implements Servlet {
 
 		String nextResultsToSkipString = "";
 		int nextResultsToSkip = numResultsToSkip + numResultsToReturn;
-		if (results.length >= numResultsToReturn) {
+		if (nextResults.length > 0) {
 			nextResultsToSkipString += nextResultsToSkip;			
 		}		
 		        
