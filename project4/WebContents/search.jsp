@@ -15,7 +15,7 @@
 </head>
 <body>
 	<h2>Keyword Search</h2>
-	<form autocomplete="off">
+	<form action="/eBay/search" autocomplete="off">
 		Name: <input type="text" name="q" id="searchTextBox">
 		<input type="hidden" name="numResultsToSkip" value="0">		
 		<input type="submit" value="Search">
