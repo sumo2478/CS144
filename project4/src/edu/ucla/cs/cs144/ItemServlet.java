@@ -192,13 +192,14 @@ public class ItemServlet extends HttpServlet implements Servlet {
         	}            
         }
         catch (IOException e) {
-            e.printStackTrace();
-            System.exit(3);
+            e.printStackTrace();            
         }
         catch (SAXException e) {            
             System.out.println("  (not supposed to happen with supplied XML files)");
-            e.printStackTrace();
-            System.exit(3);
+            e.printStackTrace();            
+        }
+        catch (Exception e) {
+            System.out.println(" An Exception has occurred");
         }         
 
         return doc;   	

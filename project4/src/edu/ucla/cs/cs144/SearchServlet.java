@@ -42,8 +42,7 @@ public class SearchServlet extends HttpServlet implements Servlet {
 		        
         request.setAttribute("prevResultsToSkip", prevResultsToSkipString);
         request.setAttribute("nextResultsToSkip", nextResultsToSkipString);        
-        
-
+                
         request.getRequestDispatcher("/search.jsp").forward(request, response);
     }    
 }

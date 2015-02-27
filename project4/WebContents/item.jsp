@@ -7,11 +7,10 @@
 <html>
 <head>
 	<title>Item Results</title>
+	<style type="text/css">
+		#map_canvas { height:100% }
+	</style>
 </head>
-
-<style type="text/css">
-	#map_canvas { height:100% }
-</style>
 
 <body onload="initialize()">
 	<h2>Search For Item:</h2>
@@ -29,8 +28,8 @@
 		else {
 		%>
 			<h2>Item Result:</h2>
-			<h3>ID: <%= request.getAttribute("itemId") %></h3>
 			<h3>Name: <%= request.getAttribute("name") %></h3>
+			<p>ID: <%= request.getAttribute("itemId") %></p>			
 			<p>Currently: <%= request.getAttribute("currently") %></p>
 			<p>First Bid: <%= request.getAttribute("firstBid") %></p>
 

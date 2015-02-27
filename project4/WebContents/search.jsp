@@ -21,8 +21,7 @@
 		<input type="submit" value="Search">
 	</form>
 	<br>
-	<br>
-	<br>
+
 	<h2>Search Results: </h2>
 	<%	
 		SearchResult[] results = (SearchResult[])request.getAttribute("results");		
