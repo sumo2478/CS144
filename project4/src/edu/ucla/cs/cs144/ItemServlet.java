@@ -142,10 +142,10 @@ public class ItemServlet extends HttpServlet implements Servlet {
 	    Collections.sort(bids, new Comparator<Bid>() {
 	        @Override public int compare(Bid b1, Bid b2) {
 		        if (b1.dateObject.before(b2.dateObject)) {
-		            return -1;
+		            return 1;
 		        }
 		        else if (b1.dateObject.after(b2.dateObject)) {
-		            return 1;
+		            return -1;
 		        }
 		        else {
 		            return 0;
