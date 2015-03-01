@@ -135,6 +135,9 @@
 		else {
 			var geocoder = new google.maps.Geocoder();
 			var address = "<%= request.getAttribute("location") %>";
+			var country = "<%= request.getAttribute("country") %>";
+			address = address + ", " + country;					
+
 			geocoder.geocode({'address': address}, function (results, status) {
 				if (status == google.maps.GeocoderStatus.OK) {
 					var myOptions = {
