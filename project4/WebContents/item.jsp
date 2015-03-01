@@ -50,7 +50,7 @@
 				String longitude = (String) request.getAttribute("longitude");
 				if (latitude != "" && longitude != "") {
 				%>
-					<p>Latitude: <%= latitude %> Longitude <%= longitude %></p>	
+					<p>Latitude: <%= latitude %> Longitude: <%= longitude %></p>	
 				<%
 				}
 			%>	
