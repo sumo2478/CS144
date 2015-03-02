@@ -14,11 +14,17 @@ public class SearchServlet extends HttpServlet implements Servlet {
        
     public SearchServlet() {}
 
+    static int DEFAULT_NUM_RESULTS_TO_RETURN = 20;
+
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {        
         String searchQuery = request.getParameter("q");
-        int numResultsToSkip = Integer.parseInt(request.getParameter("numResultsToSkip"));
-        int numResultsToReturn = 20;
+        int numResultsToSkip = Integer.parseInt(request.getParameter("numResultsToSkip"));        
+
+        int numResultsToReturn = DEFAULT_NUM_RESULTS_TO_RETURN;
+        if (request.getParameter("numResultsToReturn") != null) {
+            numResultsToReturn = Integer.parseInt(request.getParameter("numResultsToReturn"));        
+        }        
 
         AuctionSearchClient searchClient = new AuctionSearchClient();
         SearchResult[] results = searchClient.basicSearch(searchQuery, numResultsToSkip, numResultsToReturn);
@@ -29,13 +35,13 @@ public class SearchServlet extends HttpServlet implements Servlet {
 
         // Set the results to skip               
 		String prevResultsToSkipString = "";
-		int prevResultsToSkip = numResultsToSkip - numResultsToReturn;
+		int prevResultsToSkip = numResultsToSkip - DEFAULT_NUM_RESULTS_TO_RETURN;
 		if (prevResultsToSkip >= 0) {
 			prevResultsToSkipString += prevResultsToSkip;
 		}		
 
 		String nextResultsToSkipString = "";
-		int nextResultsToSkip = numResultsToSkip + numResultsToReturn;
+		int nextResultsToSkip = numResultsToSkip + DEFAULT_NUM_RESULTS_TO_RETURN;
 		if (nextResults.length > 0) {
 			nextResultsToSkipString += nextResultsToSkip;			
 		}		
