@@ -38,7 +38,7 @@
 				String buyPrice = (String) request.getAttribute("buyPrice");		
 				if (buyPrice != "") {
 				%>
-					<p>Buy Price: <%= buyPrice %>  <button>Pay Now</button></p>  
+					<p>Buy Price: <%= buyPrice %></p>   <form action="/eBay/buy"><input type="submit" value="Pay Now"></form> 
 				<%
 				}
 			%>

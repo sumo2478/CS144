@@ -11,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import edu.ucla.cs.cs144.AuctionSearchClient;
 import edu.ucla.cs.cs144.Bid;
@@ -154,6 +155,12 @@ public class ItemServlet extends HttpServlet implements Servlet {
 	    });
 
         request.setAttribute("bids", bids);
+
+        // Set the session attributes for buy now
+        HttpSession session = request.getSession(true);
+        session.setAttribute("itemId", itemId);
+        session.setAttribute("itemName", name);
+        session.setAttribute("buyPrice", buyPrice);
 
 		request.getRequestDispatcher("/item.jsp").forward(request, response);
     }
