@@ -4,6 +4,7 @@
 	<title>Buy Item</title>
 </head>
 <body>
+	<% String confirmationUrl = "https://" + request.getServerName() + ":8443" + request.getContextPath() + "/confirm"; %>
 		<%-- If no buy price then cannot buy --%>
 	<%
 		String buyPrice = (String) request.getAttribute("buyPrice");		
@@ -14,7 +15,7 @@
 			<p>ID: <%= request.getAttribute("itemId") %></p>
 			<p>Price: <%= request.getAttribute("buyPrice") %></p>
 
-			<form action="/eBay/confirm" method="post">
+			<form action="<%= confirmationUrl %>" method="post">
 				Credit Card Number: <input type="text" name="creditCardNumber">
 				<input type="submit" value="Pay">
 			</form>			
